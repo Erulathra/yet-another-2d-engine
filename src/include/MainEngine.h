@@ -8,15 +8,14 @@
 #include "glm/vec3.hpp"
 #include "Nodes/Node.h"
 #include "glm/gtc/constants.hpp"
-#include "ModelRenderer.h"
 
 class MainEngine {
 private:
-    GLFWwindow* Window;
+    GLFWwindow* window;
 
-    std::shared_ptr<class Camera> MainCamera;
-    Node SceneRoot;
-    ModelRenderer Renderer;
+    std::unique_ptr<class Camera> camera;
+    Node sceneRoot;
+    std::unique_ptr<class SpriteRenderer> renderer;
 
 public:
     explicit MainEngine();

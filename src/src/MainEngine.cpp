@@ -9,8 +9,11 @@
 #include <stb_image.h>
 
 #include "LoggingMacros.h"
-#include "Model.h"
-#include "Nodes/ModelNode.h"
+#include "SpriteRenderer.h"
+#include "ShaderWrapper.h"
+#include "Sprite.h"
+#include "Nodes/SpriteNode.h"
+#include "Camera.h"
 
 int32_t MainEngine::Init()
 {
@@ -36,25 +39,29 @@ int32_t MainEngine::Init()
     }
     SPDLOG_DEBUG("Successfully initialized OpenGL loader!");
 
+    glEnable(GL_DEPTH_TEST);
     stbi_set_flip_vertically_on_load(true);
 
     InitializeImGui(GLSLVersion);
 
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
+    renderer = std::make_unique<SpriteRenderer>("res/textures/TileMap.png", 32);
+    camera = std::make_unique<Camera>();
+
     return 0;
 }
 
 int32_t MainEngine::InitializeWindow()
 {
-    Window = glfwCreateWindow(640, 480, "Housing Estate", nullptr, nullptr);
-    if (Window == nullptr)
+    window = glfwCreateWindow(640, 480, "Yet another 2D Engine", nullptr, nullptr);
+    if (window == nullptr)
     {
         SPDLOG_ERROR("Failed to create OpenGL Window");
         return 1;
     }
 
-    glfwMakeContextCurrent(Window);
+    glfwMakeContextCurrent(window);
     glfwSwapInterval(false);
     return 0;
 }
@@ -66,45 +73,47 @@ void MainEngine::GLFWErrorCallback(int Error, const char* Description)
 
 int32_t MainEngine::MainLoop()
 {
-    auto StartProgramTimePoint = std::chrono::high_resolution_clock::now();
-    float PreviousFrameSeconds = 0;
+    auto startProgramTimePoint = std::chrono::high_resolution_clock::now();
+    float previousFrameSeconds = 0;
 
 #ifdef DEBUG
     CheckGLErrors();
 #endif
 
-    while (!glfwWindowShouldClose(Window))
+    while (!glfwWindowShouldClose(window))
     {
         // TimeCalculation
-        std::chrono::duration<float> TimeFromStart = std::chrono::high_resolution_clock::now() - StartProgramTimePoint;
-        float Seconds = TimeFromStart.count();
-        float DeltaSeconds = Seconds - PreviousFrameSeconds;
-        PreviousFrameSeconds = Seconds;
+        std::chrono::duration<float> timeFromStart = std::chrono::high_resolution_clock::now() - startProgramTimePoint;
+        float seconds = timeFromStart.count();
+        float deltaSeconds = seconds - previousFrameSeconds;
+        previousFrameSeconds = seconds;
 
         glClearDepth(1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        glm::vec<2, int> CurrentResolution{};
-        glfwMakeContextCurrent(Window);
-        glfwGetFramebufferSize(Window, &CurrentResolution.x, &CurrentResolution.y);
-        glViewport(0, 0, CurrentResolution.x, CurrentResolution.y);
+        glm::vec<2, int> currentResolution{};
+        glfwMakeContextCurrent(window);
+        glfwGetFramebufferSize(window, &currentResolution.x, &currentResolution.y);
+        glViewport(0, 0, currentResolution.x, currentResolution.y);
 
-        SceneRoot.Update(this, Seconds, DeltaSeconds);
-        SceneRoot.CalculateWorldTransform();
-        SceneRoot.Draw();
+        camera->UpdateProjection(currentResolution);
 
-        Renderer.Draw();
+        sceneRoot.Update(this, seconds, deltaSeconds);
+        sceneRoot.CalculateWorldTransform();
+        sceneRoot.Draw();
 
-        UpdateWidget(DeltaSeconds);
+        renderer->Draw();
+
+        UpdateWidget(deltaSeconds);
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(Window);
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
@@ -118,7 +127,8 @@ void MainEngine::UpdateWidget(float DeltaSeconds)
     ImGui::End();
 }
 
-MainEngine::MainEngine() : SceneRoot()
+MainEngine::MainEngine()
+: sceneRoot()
 {
 }
 
@@ -131,7 +141,7 @@ void MainEngine::InitializeImGui(const char* GLSLVersion)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
-    ImGui_ImplGlfw_InitForOpenGL(Window, true);
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(GLSLVersion);
 
     // Setup style
@@ -149,21 +159,27 @@ void MainEngine::Stop()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    if (!Window)
+    if (!window)
         return;
 
-    glfwDestroyWindow(Window);
+    glfwDestroyWindow(window);
     glfwTerminate();
 }
 
 void MainEngine::CheckGLErrors()
 {
-    GLenum Error;
+    GLenum error;
 
-    while ((Error = glGetError()) != GL_NO_ERROR)
-        SPDLOG_ERROR("OpenGL Error: {}", Error);
+    while ((error = glGetError()) != GL_NO_ERROR)
+        SPDLOG_ERROR("OpenGL error: {}", error);
 }
 
-void MainEngine::PrepareScene()
-{
+void MainEngine::PrepareScene() {
+    auto grassSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
+    for (int i = -10; i < 10; ++i) {
+        auto spriteNodeOne = std::make_shared<SpriteNode>(grassSprite, renderer.get());
+        spriteNodeOne->GetLocalTransform()->SetPosition(glm::vec3((float) i + 0.5f, 0.f, 0.f));
+        sceneRoot.AddChild(spriteNodeOne);
+    }
+
 }

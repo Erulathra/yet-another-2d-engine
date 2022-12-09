@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
-project(Housing-Estate VERSION 2.0)
+project(Yet-Another-Platformer-Engine VERSION 2.0)
 
 IF (WIN32)
   message(NOTICE "\n")
