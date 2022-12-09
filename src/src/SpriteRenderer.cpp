@@ -11,9 +11,11 @@
 
 #include "LoggingMacros.h"
 
-SpriteRenderer::SpriteRenderer(std::string tileMapPath, int tileSize):
-tileSize(tileSize)
-{
+
+SpriteRenderer::SpriteRenderer(std::string tileMapPath, int tileSize)
+        : tileSize(tileSize) {
+
+
     InitializeVAO();
     shader = std::make_unique<ShaderWrapper>("res/shaders/tile_map.vert", "res/shaders/tile_map.frag");
     tileMap = TextureFromFile(tileMapPath);
@@ -21,17 +23,15 @@ tileSize(tileSize)
     glBindVertexArray(0);
 }
 
-GLuint SpriteRenderer::TextureFromFile(const std::string& path)
-{
+GLuint SpriteRenderer::TextureFromFile(const std::string &path) {
     GLuint textureId;
     glGenTextures(1, &textureId);
 
     SPDLOG_DEBUG("Loading texture at path: {}", path);
 
     int width, height, NumberOfComponents;
-    uint8_t* imageData = stbi_load(path.c_str(), &width, &height, &NumberOfComponents, 0);
-    if (imageData)
-    {
+    auto imageData = stbi_load(path.c_str(), &width, &height, &NumberOfComponents, 0);
+    if (imageData) {
         GLenum colorFormat;
         if (NumberOfComponents == 1)
             colorFormat = (GL_RED);
@@ -52,9 +52,7 @@ GLuint SpriteRenderer::TextureFromFile(const std::string& path)
         tileMapSize = width;
 
         stbi_image_free(imageData);
-    }
-    else
-    {
+    } else {
         SPDLOG_ERROR("Failed to load texture at path: {}", path);
         stbi_image_free(imageData);
     }
@@ -82,13 +80,13 @@ void SpriteRenderer::InitializeVAO() {
 
     const GLsizei SizeOfVec4 = sizeof(glm::vec4);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void*)0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void *) 0);
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void*)(SizeOfVec4));
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void *) (SizeOfVec4));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void*)(2 * SizeOfVec4));
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void *) (2 * SizeOfVec4));
     glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void*)(3 * SizeOfVec4));
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * SizeOfVec4, (void *) (3 * SizeOfVec4));
 
     glVertexAttribDivisor(1, 1);
     glVertexAttribDivisor(2, 1);
@@ -98,22 +96,22 @@ void SpriteRenderer::InitializeVAO() {
     glBindBuffer(GL_ARRAY_BUFFER, textureCordBuffer);
 
     glEnableVertexAttribArray(5);
-    glVertexAttribIPointer(5, 2, GL_INT, sizeof(glm::vec<2, int>), (void*)0);
+    glVertexAttribIPointer(5, 2, GL_INT, sizeof(glm::vec<2, int>), (void *) 0);
     glVertexAttribDivisor(5, 1);
 }
 
 void SpriteRenderer::AddNode(SpriteNode *node) {
-    nodes.insert(node);
+    nodes.push_back(node);
 }
 
 void SpriteRenderer::RemoveNode(SpriteNode *node) {
-    nodes.erase(node);
+    auto foundIterator = std::find(nodes.begin(), nodes.end(),node);
+    nodes.erase(foundIterator);
 }
 
 void SpriteRenderer::UpdateMatrixBuffer() {
     std::vector<glm::mat4> matrices;
-    for (SpriteNode* node : nodes)
-    {
+    for (SpriteNode *node: nodes) {
         matrices.push_back(*node->GetWorldTransformMatrix());
     }
 
@@ -123,8 +121,7 @@ void SpriteRenderer::UpdateMatrixBuffer() {
 
 void SpriteRenderer::UpdateTilePositionBuffer() {
     std::vector<glm::vec<2, int>> tileCoords;
-    for (SpriteNode* node: nodes)
-    {
+    for (SpriteNode *node: nodes) {
         tileCoords.push_back(node->getSprite()->GetTileMapPosition());
     }
 
@@ -133,10 +130,20 @@ void SpriteRenderer::UpdateTilePositionBuffer() {
 }
 
 void SpriteRenderer::Draw() {
-    for (SpriteNode* node : nodes)
-    {
-        if (node->WasDirtyThisFrame())
-        {
+    auto comparator = [](Node *A, Node *B)-> bool {
+        glm::mat4 matrixA = *A->GetWorldTransformMatrix();
+        glm::mat4 matrixB = *B->GetWorldTransformMatrix();
+
+        if (matrixA[3][2] == matrixB[3][2])
+            return A < B;
+        else
+            return matrixA[3][2] < matrixB[3][2];
+    };
+
+    std::sort(nodes.begin(), nodes.end(), comparator);
+
+    for (SpriteNode *node: nodes) {
+        if (node->WasDirtyThisFrame()) {
             UpdateMatrixBuffer();
             UpdateTilePositionBuffer();
             break;

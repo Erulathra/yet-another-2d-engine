@@ -9,24 +9,24 @@
 class Node
 {
 private:
-    std::shared_ptr<Transform> LocalTransformPtr;
-    glm::mat4 WorldTransformMatrix;
+    std::shared_ptr<Transform> localTransform;
+    glm::mat4 worldTransformMatrix;
 
     Node* Parent;
-    std::vector<std::shared_ptr<Node>> ChildrenList;
-    bool IsDirty;
+    std::vector<std::shared_ptr<Node>> childrenList;
+    bool isDirty;
 
-    bool WasDirty;
+    bool wasDirty;
 public:
     explicit Node();
 
     void CalculateWorldTransform();
     void Draw();
-    virtual void Update(class MainEngine* Engine, float Seconds, float DeltaSeconds);
+    virtual void Update(class MainEngine* engine, float seconds, float deltaSeconds);
 
     Transform* GetLocalTransform();
 
-    void AddChild(std::shared_ptr<Node> NewChild);
+    void AddChild(std::shared_ptr<Node> newChild);
 
     const glm::mat4* GetWorldTransformMatrix();
 
@@ -35,8 +35,8 @@ public:
     virtual std::shared_ptr<Node> Clone();
 
 protected:
-    virtual void Draw(glm::mat4& ParentTransform, bool IsDirty);
-    void CalculateWorldTransform(glm::mat4& ParentTransform, bool IsDirty);
+    virtual void Draw(glm::mat4& parentTransform, bool isDirty);
+    void CalculateWorldTransform(glm::mat4& parentTransform, bool isDirty);
 };
 
 

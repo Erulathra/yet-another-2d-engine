@@ -15,6 +15,7 @@
 #include "Nodes/SpriteNode.h"
 #include "Camera.h"
 #include "Nodes/Map.h"
+#include "Nodes/PlayerNode.h"
 
 int32_t MainEngine::Init()
 {
@@ -41,6 +42,9 @@ int32_t MainEngine::Init()
     SPDLOG_DEBUG("Successfully initialized OpenGL loader!");
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     stbi_set_flip_vertically_on_load(true);
 
     InitializeImGui(GLSLVersion);
@@ -188,6 +192,19 @@ void MainEngine::PrepareScene() {
 
     auto map = std::make_shared<Map>("res/other/map", Nodes);
     glm::vec2 mapSize = map->GetSize();
-//    map->GetLocalTransform()->SetPosition(glm::vec3(mapSize.x / 2, mapSize.y / 2, 0));
+    map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2, -mapSize.y / 2, 0));
     sceneRoot.AddChild(map);
+
+    auto PlayerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
+    auto PlayerSpriteNode = std::make_shared<SpriteNode>(PlayerSprite, renderer.get());
+
+    sceneRoot.AddChild(std::make_shared<PlayerNode>(PlayerSpriteNode));
+}
+
+GLFWwindow *MainEngine::GetWindow() const {
+    return window;
+}
+
+const std::unique_ptr<struct Camera> &MainEngine::GetCamera() const {
+    return camera;
 }

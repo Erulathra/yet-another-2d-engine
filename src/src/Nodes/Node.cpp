@@ -2,85 +2,86 @@
 #include "LoggingMacros.h"
 
 Node::Node()
-: LocalTransformPtr(std::make_shared<Transform>()), IsDirty(true), WorldTransformMatrix(1.f)
+: localTransform(std::make_shared<Transform>()), isDirty(true), worldTransformMatrix(1.f)
 {
 
 }
 
 Transform* Node::GetLocalTransform()
 {
-    IsDirty = true;
-    return LocalTransformPtr.get();
+    isDirty = true;
+    return localTransform.get();
 }
 
 const glm::mat4* Node::GetWorldTransformMatrix()
 {
-    return &WorldTransformMatrix;
+    return &worldTransformMatrix;
 }
 
 void Node::Draw()
 {
     glm::mat4 WorldMatrix = *GetWorldTransformMatrix();
-    Draw(WorldMatrix, IsDirty);
+    Draw(WorldMatrix, isDirty);
 }
 
 void Node::CalculateWorldTransform()
 {
-    glm::mat4 LocalTransformMatrix = LocalTransformPtr->GetMatrix();
-    CalculateWorldTransform(LocalTransformMatrix, IsDirty);
+    glm::mat4 LocalTransformMatrix = localTransform->GetMatrix();
+    CalculateWorldTransform(LocalTransformMatrix, isDirty);
 }
 
-void Node::Draw(glm::mat4& ParentTransform, bool IsDirty)
+void Node::Draw(glm::mat4& parentTransform, bool isDirty)
 {
-    for (const std::shared_ptr<Node>& Child: ChildrenList)
+    for (const std::shared_ptr<Node>& Child: childrenList)
     {
-        Child->Draw(WorldTransformMatrix, IsDirty);
+        Child->Draw(worldTransformMatrix, isDirty);
     }
 }
 
-void Node::CalculateWorldTransform(glm::mat4& ParentTransform, bool IsDirty)
+void Node::CalculateWorldTransform(glm::mat4& parentTransform, bool isDirty)
 {
-    IsDirty |= this->IsDirty;
-    WasDirty = IsDirty;
-    if (IsDirty)
+    isDirty |= this->isDirty;
+    wasDirty = isDirty;
+    if (isDirty)
     {
-        WorldTransformMatrix = ParentTransform * LocalTransformPtr->GetMatrix();
-        this->IsDirty = false;
+        worldTransformMatrix = parentTransform * localTransform->GetMatrix();
+        this->isDirty = false;
     }
 
 
-    for (const std::shared_ptr<Node>& Child: ChildrenList)
+    for (const std::shared_ptr<Node>& child: childrenList)
     {
-        Child->CalculateWorldTransform(WorldTransformMatrix, IsDirty);
+        child->CalculateWorldTransform(worldTransformMatrix, isDirty);
     }
 }
 
-void Node::AddChild(std::shared_ptr<Node> NewChild)
+void Node::AddChild(std::shared_ptr<Node> newChild)
 {
-    if (NewChild.get() == this || NewChild.get() == Parent)
+    if (newChild.get() == this || newChild.get() == Parent)
         return;
 
-    NewChild->Parent = NewChild.get();
-    ChildrenList.push_back(NewChild);
+    newChild->Parent = newChild.get();
+    childrenList.push_back(newChild);
+    newChild->CalculateWorldTransform(worldTransformMatrix, true);
 }
 
-void Node::Update(class MainEngine* Engine, float Seconds, float DeltaSeconds)
+void Node::Update(class MainEngine* engine, float seconds, float deltaSeconds)
 {
-    for (std::shared_ptr<Node> ChildNode : ChildrenList) {
-        ChildNode->Update(Engine, Seconds, DeltaSeconds);
+    for (std::shared_ptr<Node> childNode : childrenList) {
+        childNode->Update(engine, seconds, deltaSeconds);
     }
 }
 
 bool Node::WasDirtyThisFrame() const
 {
-    return WasDirty;
+    return wasDirty;
 }
 
 std::shared_ptr<Node> Node::Clone() {
     auto result = std::make_shared<Node>();
-    result->LocalTransformPtr = std::make_shared<Transform>(*this->LocalTransformPtr) ;
-    result->IsDirty = true;
-    result->WasDirty = true;
+    result->localTransform= std::make_shared<Transform>(*this->localTransform) ;
+    result->isDirty = true;
+    result->wasDirty = true;
     return result;
 }
 

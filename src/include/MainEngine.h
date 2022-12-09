@@ -25,6 +25,10 @@ public:
     void PrepareScene();
     int32_t MainLoop();
 
+    GLFWwindow *GetWindow() const;
+
+    const std::unique_ptr<struct Camera> &GetCamera() const;
+
 private:
     void Stop();
 

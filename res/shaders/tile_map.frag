@@ -9,5 +9,7 @@ in VS_OUT {
 } fs_in;
 
 void main() {
+
     FragColor = texture(texture_diffuse, fs_in.TexCoord);
+
 }
