@@ -76,5 +76,13 @@ bool Node::WasDirtyThisFrame() const
     return WasDirty;
 }
 
+std::shared_ptr<Node> Node::Clone() {
+    auto result = std::make_shared<Node>();
+    result->LocalTransformPtr = std::make_shared<Transform>(*this->LocalTransformPtr) ;
+    result->IsDirty = true;
+    result->WasDirty = true;
+    return result;
+}
+
 
 

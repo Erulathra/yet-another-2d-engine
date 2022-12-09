@@ -21,10 +21,10 @@ void main() {
 
     vec2 fTileCoord;
     fTileCoord.x = float(TileCoord.x);
-    fTileCoord.y = float(TileCoord.y);
+    fTileCoord.y = float(-TileCoord.y);
 
     vec2 texCoord = Position.xy + vec2(0.5, 0.5) + fTileCoord;
-    //texCoord.y = 1 - texCoord.y;
+    texCoord.y = 1 - texCoord.y;
 
     vs_out.TexCoord = texCoord / (tileMapSize / tileSize);
     vs_out.TexCoord.y = 1 - vs_out.TexCoord.y;

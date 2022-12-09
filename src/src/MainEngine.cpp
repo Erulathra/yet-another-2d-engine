@@ -14,6 +14,7 @@
 #include "Sprite.h"
 #include "Nodes/SpriteNode.h"
 #include "Camera.h"
+#include "Nodes/Map.h"
 
 int32_t MainEngine::Init()
 {
@@ -175,11 +176,18 @@ void MainEngine::CheckGLErrors()
 }
 
 void MainEngine::PrepareScene() {
-    auto grassSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
-    for (int i = -10; i < 10; ++i) {
-        auto spriteNodeOne = std::make_shared<SpriteNode>(grassSprite, renderer.get());
-        spriteNodeOne->GetLocalTransform()->SetPosition(glm::vec3((float) i + 0.5f, 0.f, 0.f));
-        sceneRoot.AddChild(spriteNodeOne);
-    }
+    auto BricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 1));
+    auto BrownBricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 1));
 
+    auto Brick = std::make_unique<SpriteNode>(BricksSprite, renderer.get());
+    auto Path = std::make_unique<SpriteNode>(BrownBricksSprite, renderer.get());
+
+    std::map<char, class Node *> Nodes;
+    Nodes['#'] = Brick.get();
+    Nodes[' '] = Path.get();
+
+    auto map = std::make_shared<Map>("res/other/map", Nodes);
+    glm::vec2 mapSize = map->GetSize();
+//    map->GetLocalTransform()->SetPosition(glm::vec3(mapSize.x / 2, mapSize.y / 2, 0));
+    sceneRoot.AddChild(map);
 }
