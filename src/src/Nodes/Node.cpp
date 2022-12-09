@@ -2,14 +2,13 @@
 #include "LoggingMacros.h"
 
 Node::Node()
-: localTransform(std::make_shared<Transform>()), isDirty(true), worldTransformMatrix(1.f)
+: localTransform(std::make_shared<Transform>()), worldTransformMatrix(1.f)
 {
 
 }
 
 Transform* Node::GetLocalTransform()
 {
-    isDirty = true;
     return localTransform.get();
 }
 
@@ -21,13 +20,13 @@ const glm::mat4* Node::GetWorldTransformMatrix()
 void Node::Draw()
 {
     glm::mat4 WorldMatrix = *GetWorldTransformMatrix();
-    Draw(WorldMatrix, isDirty);
+    Draw(WorldMatrix, localTransform->isDirty);
 }
 
 void Node::CalculateWorldTransform()
 {
     glm::mat4 LocalTransformMatrix = localTransform->GetMatrix();
-    CalculateWorldTransform(LocalTransformMatrix, isDirty);
+    CalculateWorldTransform(LocalTransformMatrix, localTransform->isDirty);
 }
 
 void Node::Draw(glm::mat4& parentTransform, bool isDirty)
@@ -40,12 +39,12 @@ void Node::Draw(glm::mat4& parentTransform, bool isDirty)
 
 void Node::CalculateWorldTransform(glm::mat4& parentTransform, bool isDirty)
 {
-    isDirty |= this->isDirty;
+    isDirty |= localTransform->isDirty;
     wasDirty = isDirty;
     if (isDirty)
     {
         worldTransformMatrix = parentTransform * localTransform->GetMatrix();
-        this->isDirty = false;
+        localTransform->isDirty = false;
     }
 
 
@@ -80,7 +79,6 @@ bool Node::WasDirtyThisFrame() const
 std::shared_ptr<Node> Node::Clone() {
     auto result = std::make_shared<Node>();
     result->localTransform= std::make_shared<Transform>(*this->localTransform) ;
-    result->isDirty = true;
     result->wasDirty = true;
     return result;
 }

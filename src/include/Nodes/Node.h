@@ -14,7 +14,6 @@ private:
 
     Node* Parent;
     std::vector<std::shared_ptr<Node>> childrenList;
-    bool isDirty;
 
     bool wasDirty;
 public:

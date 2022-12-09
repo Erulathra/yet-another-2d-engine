@@ -3,39 +3,42 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 glm::mat4 Transform::GetMatrix() const {
-    glm::mat4 Translation = glm::translate(glm::mat4(1.f), Position);
-    glm::mat4 ScaleMat = glm::scale(glm::mat4(1.f), Scale);
-    return Translation * Rotation * ScaleMat;
+    glm::mat4 translation = glm::translate(glm::mat4(1.f), position);
+    glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), scale);
+    return translation * rotation * scaleMat;
 }
 
 glm::vec3 Transform::GetPosition() const {
-    return Position;
+    return position;
 }
 
 glm::mat4 Transform::GetRotation() const {
-    return Rotation;
+    return rotation;
 }
 
 glm::vec3 Transform::GetScale() const {
-    return Scale;
+    return scale;
 }
 
-void Transform::SetPosition(const glm::vec3& NewPosition) {
-    Position = NewPosition;
+void Transform::SetPosition(const glm::vec3& newPosition) {
+    position = newPosition;
+    isDirty = true;
 }
 
-void Transform::SetRotation(const glm::mat4& NewRotation) {
-    Rotation = NewRotation;
+void Transform::SetRotation(const glm::mat4& newRotation) {
+    rotation = newRotation;
+    isDirty = true;
 }
 
-void Transform::SetScale(const glm::vec3& NewScale) {
-    Scale = NewScale;
+void Transform::SetScale(const glm::vec3& newScale) {
+    scale = newScale;
+    isDirty = true;
 }
 
-Transform::Transform() : Position(glm::vec3(0.f)), Rotation(glm::mat4(1.f)), Scale(glm::vec3(1.f)) {}
+Transform::Transform() : position(glm::vec3(0.f)), rotation(glm::mat4(1.f)), scale(glm::vec3(1.f)), isDirty(true) {}
 
-Transform::Transform(Transform* OriginalTransform) :
-Position(OriginalTransform->Position),
-Rotation(OriginalTransform->Rotation),
-Scale(OriginalTransform->Scale) {
+Transform::Transform(Transform* originalTransform) :
+        position(originalTransform->position),
+        rotation(originalTransform->rotation),
+        scale(originalTransform->scale) {
 }

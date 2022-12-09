@@ -4,23 +4,27 @@
 
 class Transform {
 private:
-    glm::vec3 Position;
-    glm::vec3 Scale;
+    glm::vec3 position;
+    glm::vec3 scale;
 
 //TODO: Change to quanternion
-    glm::mat4 Rotation;
+    glm::mat4 rotation;
 
+    bool isDirty;
 public:
     Transform();
-    Transform(Transform* OriginalTransform);
+    Transform(Transform* originalTransform);
 
     [[nodiscard]] glm::vec3 GetPosition() const;
     [[nodiscard]] glm::mat4 GetRotation() const;
     [[nodiscard]] glm::vec3 GetScale() const;
 
-    void SetPosition(const glm::vec3& NewPosition);
-    void SetRotation(const glm::mat4& NewRotation);
-    void SetScale(const glm::vec3& NewScale);
+    void SetPosition(const glm::vec3& newPosition);
+    void SetRotation(const glm::mat4& newRotation);
+    void SetScale(const glm::vec3& newScale);
 
     [[nodiscard]] glm::mat4 GetMatrix() const;
+
+    friend class Node;
+
 };
