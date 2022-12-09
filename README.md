@@ -1,2 +1,2 @@
-# Yet anohter platformer engine (OPENGL)
+# Yet anohter 2D engine (OPENGL)
 
