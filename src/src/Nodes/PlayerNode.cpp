@@ -4,8 +4,7 @@
 #include "GLFW/glfw3.h"
 #include "LoggingMacros.h"
 
-PlayerNode::PlayerNode(const std::shared_ptr<SpriteNode>& spriteNode) {
-    AddChild(spriteNode);
+PlayerNode::PlayerNode() {
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 1.f));
 }
 

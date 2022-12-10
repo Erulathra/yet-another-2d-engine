@@ -5,7 +5,7 @@
 
 class PlayerNode: public Node{
 public:
-    PlayerNode(const std::shared_ptr<class SpriteNode>& sprite);
+    PlayerNode();
 
     void Update(struct MainEngine *engine, float seconds, float deltaSeconds) override;
 private:

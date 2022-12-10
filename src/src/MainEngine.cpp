@@ -195,10 +195,12 @@ void MainEngine::PrepareScene() {
     map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2, -mapSize.y / 2, 0));
     sceneRoot.AddChild(map);
 
-    auto PlayerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
-    auto PlayerSpriteNode = std::make_shared<SpriteNode>(PlayerSprite, renderer.get());
+    auto playerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
+    auto playerSpriteNode = std::make_shared<SpriteNode>(playerSprite, renderer.get());
+    auto playerNode = std::make_shared<PlayerNode>();
+    playerNode->AddChild(playerSpriteNode);
 
-    sceneRoot.AddChild(std::make_shared<PlayerNode>(PlayerSpriteNode));
+    sceneRoot.AddChild(playerNode);
 }
 
 GLFWwindow *MainEngine::GetWindow() const {
