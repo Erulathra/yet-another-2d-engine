@@ -4,15 +4,20 @@
 #include "GLFW/glfw3.h"
 #include "LoggingMacros.h"
 
-PlayerNode::PlayerNode() {
+#include "Nodes/CollisionShapes/CollisionShapeFactory.h"
+
+PlayerNode::PlayerNode()
+: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1.f, 1.f)){
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 1.f));
 }
 
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {
-    Node::Update(engine, seconds, deltaSeconds);
+    RigidbodyNode::Update(engine, seconds, deltaSeconds);
+
     glm::vec3 input(GetMovementInput(engine), 0.f);
     glm::vec3 position = GetLocalTransform()->GetPosition() + input * deltaSeconds * 10.f;
     GetLocalTransform()->SetPosition(position);
+
 }
 
 glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {

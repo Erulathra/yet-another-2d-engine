@@ -17,6 +17,9 @@
 #include "Nodes/Map.h"
 #include "Nodes/PlayerNode.h"
 
+#include "Nodes/CollisionShapes/CollisionShapeFactory.h"
+#include "Nodes/RigidbodyNode.h"
+
 int32_t MainEngine::Init()
 {
     glfwSetErrorCallback(MainEngine::GLFWErrorCallback);
@@ -179,28 +182,39 @@ void MainEngine::CheckGLErrors()
         SPDLOG_ERROR("OpenGL error: {}", error);
 }
 
+std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer);
+
 void MainEngine::PrepareScene() {
-    auto BricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 1));
-    auto BrownBricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 1));
-
-    auto Brick = std::make_unique<SpriteNode>(BricksSprite, renderer.get());
-    auto Path = std::make_unique<SpriteNode>(BrownBricksSprite, renderer.get());
-
-    std::map<char, class Node *> Nodes;
-    Nodes['#'] = Brick.get();
-    Nodes[' '] = Path.get();
-
-    auto map = std::make_shared<Map>("res/other/map", Nodes);
+    auto map = CreateNodeMap(renderer.get());
     glm::vec2 mapSize = map->GetSize();
-    map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2, -mapSize.y / 2, 0));
+    map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
     sceneRoot.AddChild(map);
 
     auto playerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
     auto playerSpriteNode = std::make_shared<SpriteNode>(playerSprite, renderer.get());
     auto playerNode = std::make_shared<PlayerNode>();
     playerNode->AddChild(playerSpriteNode);
-
     sceneRoot.AddChild(playerNode);
+
+    sceneRoot.CalculateWorldTransform();
+}
+
+std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer) {
+    auto BrownBricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 1));
+    auto BricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 1));
+
+    auto Brick = std::make_shared<SpriteNode>(BricksSprite, renderer);
+    auto Path = std::make_shared<SpriteNode>(BrownBricksSprite, renderer);
+
+    auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1, 1);
+    auto BrickRigidBody = std::make_shared<RigidbodyNode>(collisionShapeFactory);
+    BrickRigidBody->AddChild(Brick);
+    BrickRigidBody->SetIsKinematic(true);
+
+    std::map<char, Node *> nodesMap;
+    nodesMap['#'] = BrickRigidBody.get();
+    nodesMap[' '] = Path.get();
+    return std::make_shared<Map>("res/other/map", nodesMap);
 }
 
 GLFWwindow *MainEngine::GetWindow() const {
@@ -209,4 +223,8 @@ GLFWwindow *MainEngine::GetWindow() const {
 
 const std::unique_ptr<struct Camera> &MainEngine::GetCamera() const {
     return camera;
+}
+
+Node &MainEngine::GetSceneRoot() {
+    return sceneRoot;
 }

@@ -1,9 +1,8 @@
 #pragma once
 
+#include "RigidbodyNode.h"
 
-#include "Node.h"
-
-class PlayerNode: public Node{
+class PlayerNode: public RigidbodyNode{
 public:
     PlayerNode();
 

@@ -23,20 +23,32 @@ public:
     void Draw();
     virtual void Update(class MainEngine* engine, float seconds, float deltaSeconds);
 
-    Transform* GetLocalTransform();
-
     void AddChild(std::shared_ptr<Node> newChild);
 
-    const glm::mat4* GetWorldTransformMatrix();
+    Transform* GetLocalTransform();
+    glm::vec3 GetWorldPosition() const;
+    const glm::mat4* GetWorldTransformMatrix() const;
 
     [[nodiscard]] bool WasDirtyThisFrame() const;
 
     virtual std::shared_ptr<Node> Clone() const;
+
+    template<typename Predicate>
+    void GetAllNodes(std::vector<Node*>& foundArray, Predicate predicate);
 
 protected:
     virtual void Draw(glm::mat4& parentTransform, bool isDirty);
     void CalculateWorldTransform(glm::mat4& parentTransform, bool isDirty);
 };
 
+template<typename Predicate>
+void Node::GetAllNodes(std::vector<Node*> &foundArray, Predicate predicate) {
+    if (predicate(this))
+        foundArray.push_back(this);
+
+    for (const auto& node : childrenList) {
+        node->GetAllNodes(foundArray, predicate);
+    }
+}
 
 #endif //SOLARSYSTEM_NODE_H

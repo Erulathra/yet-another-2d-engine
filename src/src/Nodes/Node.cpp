@@ -12,7 +12,7 @@ Transform* Node::GetLocalTransform()
     return localTransform.get();
 }
 
-const glm::mat4* Node::GetWorldTransformMatrix()
+const glm::mat4* Node::GetWorldTransformMatrix() const
 {
     return &worldTransformMatrix;
 }
@@ -87,6 +87,15 @@ std::shared_ptr<Node> Node::Clone() const {
 
     return result;
 }
+
+glm::vec3 Node::GetWorldPosition() const {
+    float x = (*GetWorldTransformMatrix())[3][0];
+    float y = (*GetWorldTransformMatrix())[3][1];
+    float z = (*GetWorldTransformMatrix())[3][2];
+
+    return {x, y, z};
+}
+
 
 
 

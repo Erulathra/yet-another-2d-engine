@@ -29,6 +29,8 @@ public:
 
     const std::unique_ptr<struct Camera> &GetCamera() const;
 
+    Node &GetSceneRoot();
+
 private:
     void Stop();
 

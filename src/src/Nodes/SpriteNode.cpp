@@ -2,13 +2,8 @@
 #include "Sprite.h"
 #include "SpriteRenderer.h"
 
-SpriteNode::SpriteNode(const SpriteNode &obj)
-: SpriteNode(obj.sprite, obj.renderer){
-
-}
-
 SpriteNode::SpriteNode(const std::shared_ptr<Sprite> &sprite, SpriteRenderer* renderer)
-        :sprite(sprite), renderer(renderer) {
+        :Node(), sprite(sprite), renderer(renderer) {
     renderer->AddNode(this);
 }
 
@@ -25,7 +20,7 @@ const Sprite *SpriteNode::getSprite() const {
 }
 
 std::shared_ptr<Node> SpriteNode::Clone() const {
-    std::shared_ptr<SpriteNode> result(new SpriteNode);
+    std::shared_ptr<SpriteNode> result(new SpriteNode(*Node::Clone()));
 
     result->sprite = this->sprite;
     result->renderer = this->renderer;
@@ -34,7 +29,7 @@ std::shared_ptr<Node> SpriteNode::Clone() const {
     return result;
 }
 
-SpriteNode::SpriteNode() {
+SpriteNode::SpriteNode(const Node &obj) : Node(obj) {
     sprite = nullptr;
     renderer = nullptr;
 }

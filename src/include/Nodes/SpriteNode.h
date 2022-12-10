@@ -10,9 +10,9 @@ private:
 
     class SpriteRenderer* renderer;
 
+    explicit SpriteNode(const Node &obj);
 public:
     explicit SpriteNode(const std::shared_ptr<Sprite> &sprite, SpriteRenderer* renderer);
-    SpriteNode(const SpriteNode &obj);
 
     std::shared_ptr<Node> Clone() const override;
 
@@ -22,6 +22,4 @@ public:
 protected:
     void Draw(glm::mat4 &ParentTransform, bool IsDirty) override;
 
-private:
-    SpriteNode();
 };
