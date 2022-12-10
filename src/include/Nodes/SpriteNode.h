@@ -14,7 +14,7 @@ public:
     explicit SpriteNode(const std::shared_ptr<Sprite> &sprite, SpriteRenderer* renderer);
     SpriteNode(const SpriteNode &obj);
 
-    std::shared_ptr<Node> Clone() override;
+    std::shared_ptr<Node> Clone() const override;
 
     [[nodiscard]] const Sprite* getSprite() const;
     virtual ~SpriteNode();

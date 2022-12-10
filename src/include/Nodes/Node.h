@@ -31,7 +31,7 @@ public:
 
     [[nodiscard]] bool WasDirtyThisFrame() const;
 
-    virtual std::shared_ptr<Node> Clone();
+    virtual std::shared_ptr<Node> Clone() const;
 
 protected:
     virtual void Draw(glm::mat4& parentTransform, bool isDirty);

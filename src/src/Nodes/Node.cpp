@@ -76,10 +76,15 @@ bool Node::WasDirtyThisFrame() const
     return wasDirty;
 }
 
-std::shared_ptr<Node> Node::Clone() {
+std::shared_ptr<Node> Node::Clone() const {
     auto result = std::make_shared<Node>();
     result->localTransform= std::make_shared<Transform>(*this->localTransform) ;
     result->wasDirty = true;
+
+    for (const auto& node : childrenList) {
+        result->AddChild(node->Clone());
+    }
+
     return result;
 }
 

@@ -24,11 +24,13 @@ const Sprite *SpriteNode::getSprite() const {
     return static_cast<const Sprite *>(sprite.get());
 }
 
-std::shared_ptr<Node> SpriteNode::Clone() {
+std::shared_ptr<Node> SpriteNode::Clone() const {
     std::shared_ptr<SpriteNode> result(new SpriteNode);
+
     result->sprite = this->sprite;
     result->renderer = this->renderer;
     result->renderer->AddNode(result.get());
+
     return result;
 }
 
