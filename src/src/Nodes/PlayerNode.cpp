@@ -7,8 +7,8 @@
 #include "Nodes/CollisionShapes/CollisionShapeFactory.h"
 
 PlayerNode::PlayerNode()
-: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1.f, 1.f)){
-    GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 1.f));
+: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.46f)){
+    GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
 }
 
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {

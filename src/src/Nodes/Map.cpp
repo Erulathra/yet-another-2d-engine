@@ -12,7 +12,7 @@ Map::Map(const std::string &path, const std::map<char, struct Node *> &nodesMap)
     while (std::getline(file, FileLine)) {
         for (char character : FileLine) {
             auto tile = nodesMap.at(character)->Clone();
-            tile->GetLocalTransform()->SetPosition(glm::vec3(characterNumber, lineNumber, 0));
+            tile->GetLocalTransform()->SetPosition(glm::vec3(characterNumber, -lineNumber, 0));
             AddChild(tile);
 
             characterNumber++;
@@ -22,6 +22,12 @@ Map::Map(const std::string &path, const std::map<char, struct Node *> &nodesMap)
         lineNumber++;
     }
     size.y = (float)lineNumber;
+
+    for (auto& node : GetChildrenList()) {
+        glm::vec3 position = node->GetLocalTransform()->GetPosition();
+        position.y += size.y;
+        node->GetLocalTransform()->SetPosition(position);
+    }
 
     file.close();
 }

@@ -25,8 +25,8 @@ void Node::Draw()
 
 void Node::CalculateWorldTransform()
 {
-    glm::mat4 LocalTransformMatrix = localTransform->GetMatrix();
-    CalculateWorldTransform(LocalTransformMatrix, localTransform->isDirty);
+    glm::mat4 TempTransformMatrix = glm::mat4(1.f);
+    CalculateWorldTransform(TempTransformMatrix, localTransform->isDirty);
 }
 
 void Node::Draw(glm::mat4& parentTransform, bool isDirty)
@@ -94,6 +94,10 @@ glm::vec3 Node::GetWorldPosition() const {
     float z = (*GetWorldTransformMatrix())[3][2];
 
     return {x, y, z};
+}
+
+const std::vector<std::shared_ptr<Node>>& Node::GetChildrenList() const {
+    return childrenList;
 }
 
 

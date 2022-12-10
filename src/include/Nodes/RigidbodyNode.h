@@ -16,6 +16,7 @@ private:
 
 public:
     explicit RigidbodyNode(std::shared_ptr<class CollisionShapeFactory> collisionShapeFactory);
+    explicit RigidbodyNode(std::shared_ptr<class CollisionShape> collisionShape);
 
     void Update(struct MainEngine* engine, float seconds, float deltaSeconds) override;
 

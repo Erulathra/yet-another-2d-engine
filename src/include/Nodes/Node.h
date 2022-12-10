@@ -25,6 +25,8 @@ public:
 
     void AddChild(std::shared_ptr<Node> newChild);
 
+    const std::vector<std::shared_ptr<Node>>& GetChildrenList() const;
+
     Transform* GetLocalTransform();
     glm::vec3 GetWorldPosition() const;
     const glm::mat4* GetWorldTransformMatrix() const;

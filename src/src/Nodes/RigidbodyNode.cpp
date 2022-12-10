@@ -95,16 +95,22 @@ glm::vec2 RigidbodyNode::CalculateSeparationVector(RigidbodyNode* selfRigidbody,
     if (thisRectangleCollision && anotherRectangleCollision) {
         if (RectangleCollisionShape::IsRectanglesColliding(this, anotherRigidbody))
             return RectangleCollisionShape::GetSeparationVectorBetweenRectangles(this, anotherRigidbody);
-        else
-            return glm::vec2(0.f);
     }
 
-//    if (thisCircleCollision && anotherCircleCollision) {
-//        if (CircleCollisionShape::IsCirclesColliding(this, anotherRigidbody))
-//            return CircleCollisionShape::GetSeparationVectorBetweenCircles(this, anotherRigidbody);
-//        else
-//            return glm::vec2(0.f);
-//    }
+    if (thisCircleCollision && anotherCircleCollision) {
+        if (CircleCollisionShape::IsCirclesColliding(this, anotherRigidbody))
+            return CircleCollisionShape::GetSeparationVectorBetweenCircles(this, anotherRigidbody);
+    }
+
+    if (thisCircleCollision && anotherRectangleCollision) {
+        if (CircleCollisionShape::IsCircleCollidingWithRectangle(this, anotherRigidbody))
+            return CircleCollisionShape::GetSeparationVectorBetweenCircleAndRectangle(this, anotherRigidbody);
+    }
+
+    if (anotherCircleCollision && thisRectangleCollision) {
+        if (CircleCollisionShape::IsCircleCollidingWithRectangle(anotherRigidbody, this))
+            return -CircleCollisionShape::GetSeparationVectorBetweenCircleAndRectangle(anotherRigidbody, this);
+    }
 
     return glm::vec2(0.f);
 }
@@ -117,11 +123,16 @@ void RigidbodyNode::SetIsKinematic(bool isKinematic) {
     RigidbodyNode::isKinematic = isKinematic;
 }
 
-const std::shared_ptr<struct CollisionShape>& RigidbodyNode::GetCollisionShape() const {
+const std::shared_ptr<CollisionShape>& RigidbodyNode::GetCollisionShape() const {
     return collisionShape;
 }
 
-void RigidbodyNode::SetCollisionShape(const std::shared_ptr<struct CollisionShape>& collisionShape) {
+void RigidbodyNode::SetCollisionShape(const std::shared_ptr<CollisionShape>& collisionShape) {
     RigidbodyNode::collisionShape = collisionShape;
+}
+
+RigidbodyNode::RigidbodyNode(std::shared_ptr<struct CollisionShape> collisionShape)
+        : acceleration(0.f), velocity(0.f), isKinematic(false) {
+    this->collisionShape = collisionShape;
 }
 

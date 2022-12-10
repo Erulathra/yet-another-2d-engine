@@ -196,10 +196,10 @@ void MainEngine::PrepareScene() {
     playerNode->AddChild(playerSpriteNode);
     sceneRoot.AddChild(playerNode);
 
-    auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1, 1);
+    auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.49);
     auto ballRigidbody = std::make_shared<RigidbodyNode>(collisionShapeFactory);
     auto ballSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer.get());
-    ballRigidbody->GetLocalTransform()->SetPosition({-5.f, 0.f, 1.f});
+    ballRigidbody->GetLocalTransform()->SetPosition({-5.f, 1.f, 1.f});
     ballRigidbody->AddChild(ballSpriteNode);
     sceneRoot.AddChild(ballRigidbody);
 
