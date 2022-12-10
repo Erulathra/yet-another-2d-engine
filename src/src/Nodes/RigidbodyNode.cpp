@@ -8,7 +8,7 @@
 #include "Nodes/CollisionShapes/CircleCollisionShape.h"
 
 RigidbodyNode::RigidbodyNode(std::shared_ptr<CollisionShapeFactory> collisionShapeFactory)
-        : acceleration(0.f), velocity(0.f), isKinematic(false) {
+        : acceleration(0.f), newAcceleration(0.f), velocity(0.f), isKinematic(false) {
     collisionShape = collisionShapeFactory->Build();
 }
 
@@ -17,7 +17,7 @@ const glm::vec2& RigidbodyNode::GetAcceleration() const {
 }
 
 void RigidbodyNode::SetAcceleration(const glm::vec2& acceleration) {
-    RigidbodyNode::acceleration = acceleration;
+    RigidbodyNode::newAcceleration = acceleration;
 }
 
 const glm::vec2& RigidbodyNode::GetVelocity() const {
@@ -38,7 +38,7 @@ std::shared_ptr<Node> RigidbodyNode::Clone() const {
 }
 
 RigidbodyNode::RigidbodyNode(const Node& obj)
-        : Node(obj), acceleration(0.f), velocity(0.f) {
+        : Node(obj), acceleration(0.f), newAcceleration(0.f), velocity(0.f) {
 
 }
 
@@ -48,6 +48,20 @@ void RigidbodyNode::Update(MainEngine* engine, float seconds, float deltaSeconds
     if (isKinematic)
         return;
 
+    HandlePhysics(deltaSeconds);
+    HandleCollisions(engine);
+}
+
+void RigidbodyNode::HandlePhysics(float deltaSeconds) {
+    glm::vec3 newPosition = GetLocalTransform()->GetPosition();
+    newPosition += glm::vec3(velocity * deltaSeconds + 0.5f * acceleration * deltaSeconds * deltaSeconds, 0.f);
+    velocity += 0.5f * (acceleration + newAcceleration) * deltaSeconds;
+    acceleration = newAcceleration;
+
+    GetLocalTransform()->SetPosition(newPosition);
+}
+
+void RigidbodyNode::HandleCollisions(MainEngine* engine) {
     std::vector<Node*> foundNodes;
     engine->GetSceneRoot().GetAllNodes(foundNodes, [this](Node* node) -> bool {
         auto* rigidbodyNode = dynamic_cast<RigidbodyNode*>(node);
@@ -132,7 +146,7 @@ void RigidbodyNode::SetCollisionShape(const std::shared_ptr<CollisionShape>& col
 }
 
 RigidbodyNode::RigidbodyNode(std::shared_ptr<struct CollisionShape> collisionShape)
-        : acceleration(0.f), velocity(0.f), isKinematic(false) {
+        : acceleration(0.f), newAcceleration(0.f), velocity(0.f), isKinematic(false) {
     this->collisionShape = collisionShape;
 }
 

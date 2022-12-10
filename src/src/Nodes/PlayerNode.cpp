@@ -14,10 +14,12 @@ PlayerNode::PlayerNode()
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {
     RigidbodyNode::Update(engine, seconds, deltaSeconds);
 
-    glm::vec3 input(GetMovementInput(engine), 0.f);
-    glm::vec3 position = GetLocalTransform()->GetPosition() + input * deltaSeconds * 10.f;
-    GetLocalTransform()->SetPosition(position);
+    glm::vec2 input = GetMovementInput(engine);
 
+    if (glm::length(GetVelocity()) < 5.f && glm::length(input) > 0 )
+        SetAcceleration(input * 50.f);
+    else
+        SetAcceleration(GetVelocity() * -10.f);
 }
 
 glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {

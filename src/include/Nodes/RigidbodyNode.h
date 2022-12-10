@@ -2,6 +2,7 @@
 
 
 #include "Node.h"
+#include "MainEngine.h"
 
 class RigidbodyNode : public Node {
 private:
@@ -9,6 +10,8 @@ private:
 
     glm::vec2 acceleration;
     glm::vec2 velocity;
+
+    glm::vec2 newAcceleration;
 
     bool isKinematic;
 
@@ -35,4 +38,8 @@ protected:
     void Collide(RigidbodyNode* anotherRigidbodyNode);
 
     glm::vec2 CalculateSeparationVector(RigidbodyNode* selfRigidbody, RigidbodyNode* anotherRigidbody);
+
+    void HandleCollisions(MainEngine* engine);
+
+    void HandlePhysics(float deltaSeconds);
 };
