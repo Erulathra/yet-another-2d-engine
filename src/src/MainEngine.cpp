@@ -190,30 +190,38 @@ void MainEngine::PrepareScene() {
     map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
     sceneRoot.AddChild(map);
 
-    auto playerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
-    auto playerSpriteNode = std::make_shared<SpriteNode>(playerSprite, renderer.get());
+    auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
+    auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer.get());
     auto playerNode = std::make_shared<PlayerNode>();
     playerNode->AddChild(playerSpriteNode);
     sceneRoot.AddChild(playerNode);
+
+    auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1, 1);
+    auto ballRigidbody = std::make_shared<RigidbodyNode>(collisionShapeFactory);
+    auto ballSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer.get());
+    ballRigidbody->GetLocalTransform()->SetPosition({-5.f, 0.f, 1.f});
+    ballRigidbody->AddChild(ballSpriteNode);
+    sceneRoot.AddChild(ballRigidbody);
 
     sceneRoot.CalculateWorldTransform();
 }
 
 std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer) {
-    auto BrownBricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 1));
-    auto BricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 1));
+    auto brownBricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 1));
+    auto bricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 1));
 
-    auto Brick = std::make_shared<SpriteNode>(BricksSprite, renderer);
-    auto Path = std::make_shared<SpriteNode>(BrownBricksSprite, renderer);
+    auto brick = std::make_shared<SpriteNode>(bricksSprite, renderer);
+    auto path = std::make_shared<SpriteNode>(brownBricksSprite, renderer);
 
     auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1, 1);
-    auto BrickRigidBody = std::make_shared<RigidbodyNode>(collisionShapeFactory);
-    BrickRigidBody->AddChild(Brick);
-    BrickRigidBody->SetIsKinematic(true);
+    auto brickRigidBody = std::make_shared<RigidbodyNode>(collisionShapeFactory);
+    brickRigidBody->AddChild(brick);
+    brickRigidBody->SetIsKinematic(true);
+
 
     std::map<char, Node *> nodesMap;
-    nodesMap['#'] = BrickRigidBody.get();
-    nodesMap[' '] = Path.get();
+    nodesMap['#'] = brickRigidBody.get();
+    nodesMap[' '] = path.get();
     return std::make_shared<Map>("res/other/map", nodesMap);
 }
 

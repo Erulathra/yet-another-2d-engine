@@ -5,25 +5,26 @@
 #include "MainEngine.h"
 #include "LoggingMacros.h"
 #include "Nodes/CollisionShapes/RectangleCollisionShape.h"
+#include "Nodes/CollisionShapes/CircleCollisionShape.h"
 
 RigidbodyNode::RigidbodyNode(std::shared_ptr<CollisionShapeFactory> collisionShapeFactory)
         : acceleration(0.f), velocity(0.f), isKinematic(false) {
     collisionShape = collisionShapeFactory->Build();
 }
 
-const glm::vec2 &RigidbodyNode::GetAcceleration() const {
+const glm::vec2& RigidbodyNode::GetAcceleration() const {
     return acceleration;
 }
 
-void RigidbodyNode::SetAcceleration(const glm::vec2 &acceleration) {
+void RigidbodyNode::SetAcceleration(const glm::vec2& acceleration) {
     RigidbodyNode::acceleration = acceleration;
 }
 
-const glm::vec2 &RigidbodyNode::GetVelocity() const {
+const glm::vec2& RigidbodyNode::GetVelocity() const {
     return velocity;
 }
 
-void RigidbodyNode::SetVelocity(const glm::vec2 &velocity) {
+void RigidbodyNode::SetVelocity(const glm::vec2& velocity) {
     RigidbodyNode::velocity = velocity;
 }
 
@@ -36,33 +37,76 @@ std::shared_ptr<Node> RigidbodyNode::Clone() const {
     return result;
 }
 
-RigidbodyNode::RigidbodyNode(const Node &obj)
+RigidbodyNode::RigidbodyNode(const Node& obj)
         : Node(obj), acceleration(0.f), velocity(0.f) {
 
 }
 
-void RigidbodyNode::Update(MainEngine *engine, float seconds, float deltaSeconds) {
+void RigidbodyNode::Update(MainEngine* engine, float seconds, float deltaSeconds) {
     Node::Update(engine, seconds, deltaSeconds);
 
     if (isKinematic)
         return;
 
-    std::vector<Node *> foundNodes;
-    engine->GetSceneRoot().GetAllNodes(foundNodes, [this](Node *node) -> bool {
-        auto *rigidbodyNode = dynamic_cast<RigidbodyNode *>(node);
+    std::vector<Node*> foundNodes;
+    engine->GetSceneRoot().GetAllNodes(foundNodes, [this](Node* node) -> bool {
+        auto* rigidbodyNode = dynamic_cast<RigidbodyNode*>(node);
         return rigidbodyNode != nullptr && rigidbodyNode != this;
     });
 
     for (auto node: foundNodes) {
-        auto *rigidbodyNode = dynamic_cast<RigidbodyNode *>(node);
-
-        CollisionShape *rigidbodyCollisionShape = rigidbodyNode->collisionShape.get();
-
-        if (dynamic_cast<RectangleCollisionShape *>(rigidbodyCollisionShape) &&
-            dynamic_cast<RectangleCollisionShape *>(this->collisionShape.get())) {
-            CollideWithRectangle(rigidbodyNode);
-        }
+        auto* rigidbodyNode = dynamic_cast<RigidbodyNode*>(node);
+        Collide(rigidbodyNode);
     }
+}
+
+void RigidbodyNode::Collide(RigidbodyNode* anotherRigidbodyNode) {
+    glm::vec2 separationVector = CalculateSeparationVector(this, anotherRigidbodyNode);
+
+    if (glm::length(separationVector) <= 0)
+        return;
+
+    glm::vec3 position = GetLocalTransform()->GetPosition();
+
+    if (anotherRigidbodyNode->isKinematic) {
+        position += glm::vec3(separationVector, 0.f);
+    } else {
+        separationVector /= 2.f;
+        position += glm::vec3(separationVector, 0.f);
+
+        glm::vec3 anotherPosition = anotherRigidbodyNode->GetLocalTransform()->GetPosition();
+        anotherPosition -= glm::vec3(separationVector, 0.f);
+        anotherRigidbodyNode->GetLocalTransform()->SetPosition(anotherPosition);
+    }
+
+    GetLocalTransform()->SetPosition(position);
+}
+
+glm::vec2 RigidbodyNode::CalculateSeparationVector(RigidbodyNode* selfRigidbody, RigidbodyNode* anotherRigidbody) {
+    CollisionShape* thisCollisionShape = this->collisionShape.get();
+    CollisionShape* anotherCollisionShape = anotherRigidbody->collisionShape.get();
+
+    auto thisRectangleCollision = dynamic_cast<RectangleCollisionShape*>(thisCollisionShape);
+    auto anotherRectangleCollision = dynamic_cast<RectangleCollisionShape*>(anotherCollisionShape);
+
+    auto thisCircleCollision = dynamic_cast<CircleCollisionShape*>(thisCollisionShape);
+    auto anotherCircleCollision = dynamic_cast<CircleCollisionShape*>(anotherCollisionShape);
+
+    if (thisRectangleCollision && anotherRectangleCollision) {
+        if (RectangleCollisionShape::IsRectanglesColliding(this, anotherRigidbody))
+            return RectangleCollisionShape::GetSeparationVectorBetweenRectangles(this, anotherRigidbody);
+        else
+            return glm::vec2(0.f);
+    }
+
+//    if (thisCircleCollision && anotherCircleCollision) {
+//        if (CircleCollisionShape::IsCirclesColliding(this, anotherRigidbody))
+//            return CircleCollisionShape::GetSeparationVectorBetweenCircles(this, anotherRigidbody);
+//        else
+//            return glm::vec2(0.f);
+//    }
+
+    return glm::vec2(0.f);
 }
 
 bool RigidbodyNode::IsKinematic() const {
@@ -73,77 +117,6 @@ void RigidbodyNode::SetIsKinematic(bool isKinematic) {
     RigidbodyNode::isKinematic = isKinematic;
 }
 
-void RigidbodyNode::CollideWithRectangle(RigidbodyNode* rigidbodyNode) {
-    if (!IsCollidingWithRectangle(rigidbodyNode))
-        return;
-
-    glm::vec2 separationVector = CalculateSeparationVectorWithRectangle(rigidbodyNode);
-    glm::vec3 position = GetLocalTransform()->GetPosition();
-
-    if (rigidbodyNode->isKinematic) {
-        position += glm::vec3(separationVector, 0.f);
-    }
-    else {
-        separationVector /= 2.f;
-        position += glm::vec3(separationVector, 0.f);
-
-        glm::vec3 anotherPosition = rigidbodyNode->GetLocalTransform()->GetPosition();
-        anotherPosition -= glm::vec3(separationVector, 0.f);
-        rigidbodyNode->GetLocalTransform()->SetPosition(anotherPosition);
-    }
-
-    GetLocalTransform()->SetPosition(position);
-}
-
-bool RigidbodyNode::IsCollidingWithRectangle(RigidbodyNode *anotherRigidbodyNode) {
-    auto thisCollisionShape = dynamic_cast<RectangleCollisionShape *>(this->collisionShape.get());
-    auto anotherCollisionShape = dynamic_cast<RectangleCollisionShape *>(this->collisionShape.get());
-
-    glm::vec3 thisPosition = GetWorldPosition();
-    glm::vec3 anotherPosition = anotherRigidbodyNode->GetWorldPosition();
-
-    return thisCollisionShape->GetRight(thisPosition) > anotherCollisionShape->GetLeft(anotherPosition)
-           && thisCollisionShape->GetLeft(thisPosition) < anotherCollisionShape->GetRight(anotherPosition)
-           && thisCollisionShape->GetTop(thisPosition) > anotherCollisionShape->GetBottom(anotherPosition)
-           && thisCollisionShape->GetBottom(thisPosition) < anotherCollisionShape->GetTop(anotherPosition);
-}
-
-glm::vec2 RigidbodyNode::CalculateSeparationVectorWithRectangle(RigidbodyNode* anotherRigidbodyNode) {
-    auto thisCollisionShape = dynamic_cast<RectangleCollisionShape *>(this->collisionShape.get());
-    auto anotherCollisionShape = dynamic_cast<RectangleCollisionShape *>(this->collisionShape.get());
-
-    glm::vec3 thisPosition = GetWorldPosition();
-    glm::vec3 anotherPosition = anotherRigidbodyNode->GetWorldPosition();
-
-    float leftSeparation = thisCollisionShape->GetRight(thisPosition) - anotherCollisionShape->GetLeft(anotherPosition);
-    float rightSeparation = anotherCollisionShape->GetRight(anotherPosition) - thisCollisionShape->GetLeft(thisPosition);
-    float topSeparation = thisCollisionShape->GetTop(thisPosition) - anotherCollisionShape->GetBottom(anotherPosition);
-    float bottomSeparation = anotherCollisionShape->GetTop(anotherPosition) - thisCollisionShape->GetBottom(thisPosition);
-
-    glm::vec2 finalSeparation;
-    if (leftSeparation < rightSeparation)
-        finalSeparation.x = -leftSeparation;
-    else
-        finalSeparation.x = rightSeparation;
-
-    if (bottomSeparation < topSeparation)
-        finalSeparation.y = bottomSeparation;
-    else
-        finalSeparation.y = -topSeparation;
-
-    if (std::abs(finalSeparation.x) < std::abs(finalSeparation.y))
-        finalSeparation.y = 0.f;
-    else
-        finalSeparation.x = 0.f;
-
-    return finalSeparation;
-}
-
-RigidbodyNode::RigidbodyNode()
-:velocity(0.f), acceleration(0.f), isKinematic(false) {
-
-}
-
 const std::shared_ptr<struct CollisionShape>& RigidbodyNode::GetCollisionShape() const {
     return collisionShape;
 }
@@ -151,5 +124,4 @@ const std::shared_ptr<struct CollisionShape>& RigidbodyNode::GetCollisionShape()
 void RigidbodyNode::SetCollisionShape(const std::shared_ptr<struct CollisionShape>& collisionShape) {
     RigidbodyNode::collisionShape = collisionShape;
 }
-
 

@@ -31,12 +31,7 @@ public:
     void SetCollisionShape(const std::shared_ptr<struct CollisionShape>& collisionShape);
 
 protected:
-    RigidbodyNode();
+    void Collide(RigidbodyNode* anotherRigidbodyNode);
 
-private:
-    bool IsCollidingWithRectangle(RigidbodyNode* anotherRigidbodyNode);
-
-    glm::vec2 CalculateSeparationVectorWithRectangle(RigidbodyNode* anotherRigidbodyNode);
-
-    void CollideWithRectangle(RigidbodyNode* rigidbodyNode);
+    glm::vec2 CalculateSeparationVector(RigidbodyNode* selfRigidbody, RigidbodyNode* anotherRigidbody);
 };

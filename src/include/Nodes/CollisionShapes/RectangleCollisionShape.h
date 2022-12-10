@@ -12,7 +12,10 @@ private:
 public:
     RectangleCollisionShape(float height, float width);
 
-     std::shared_ptr<CollisionShape> Clone() override;
+    static bool IsRectanglesColliding(class RigidbodyNode* selfNode, RigidbodyNode* anotherNode);
+    static glm::vec2 GetSeparationVectorBetweenRectangles(RigidbodyNode* selfNode, RigidbodyNode* anotherNode);
+
+    std::shared_ptr<CollisionShape> Clone() override;
 
     [[nodiscard]] float GetLeft(glm::vec3 position) const;
     [[nodiscard]] float GetRight(glm::vec3 position) const;
