@@ -3,6 +3,8 @@
 #include "RigidbodyNode.h"
 
 class PlayerNode: public RigidbodyNode{
+private:
+    float gravityAcceleration = -5.f;
 public:
     PlayerNode();
 

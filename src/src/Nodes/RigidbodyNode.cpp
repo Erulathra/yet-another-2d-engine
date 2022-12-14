@@ -82,6 +82,12 @@ void RigidbodyNode::Collide(RigidbodyNode* anotherRigidbodyNode) {
 
     glm::vec3 position = GetLocalTransform()->GetPosition();
 
+    if (std::abs(separationVector.x) > 0.1f) {
+        velocity.x *= 0.5f;
+    } else if (std::abs(separationVector.y) > 0.f) {
+        velocity.y *= 0.5f;
+    }
+
     if (anotherRigidbodyNode->isKinematic) {
         position += glm::vec3(separationVector, 0.f);
     } else {

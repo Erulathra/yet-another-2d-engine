@@ -7,7 +7,7 @@
 #include "Nodes/CollisionShapes/CollisionShapeFactory.h"
 
 PlayerNode::PlayerNode()
-: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.46f)){
+: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f)){
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
 }
 
@@ -16,10 +16,16 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
 
     glm::vec2 input = GetMovementInput(engine);
 
-    if (glm::length(GetVelocity()) < 5.f && glm::length(input) > 0 )
-        SetAcceleration(input * 50.f);
+    glm::vec2 newAcceleration;
+
+    if (std::abs(GetVelocity().x) < 5.f && std::abs(input.x) > 0 )
+        newAcceleration.x = input.x * 50.f;
     else
-        SetAcceleration(GetVelocity() * -10.f);
+        newAcceleration.x = GetVelocity().x * -10.f;
+
+    newAcceleration.y = gravityAcceleration;
+
+    SetAcceleration(newAcceleration);
 }
 
 glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {
