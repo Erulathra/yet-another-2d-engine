@@ -12,13 +12,13 @@
 #include "SpriteRenderer.h"
 #include "ShaderWrapper.h"
 #include "Sprite.h"
-#include "Nodes/SpriteNode.h"
-#include "Camera.h"
-#include "Nodes/Map.h"
-#include "Nodes/PlayerNode.h"
 
 #include "Nodes/CollisionShapes/CollisionShapeFactory.h"
 #include "Nodes/RigidbodyNode.h"
+#include "Nodes/CameraNode.h"
+#include "Nodes/SpriteNode.h"
+#include "Nodes/Map.h"
+#include "Nodes/PlayerNode.h"
 
 int32_t MainEngine::Init()
 {
@@ -31,8 +31,6 @@ int32_t MainEngine::Init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-
-    glfwWindowHint(GLFW_SAMPLES, 4);
 
     if (InitializeWindow() != 0)
         return 1;
@@ -55,7 +53,6 @@ int32_t MainEngine::Init()
     glClearColor(0.f, 0.f, 0.f, 1.f);
 
     renderer = std::make_unique<SpriteRenderer>("res/textures/TileMap.png", 32);
-    camera = std::make_unique<Camera>();
 
     return 0;
 }
@@ -109,13 +106,14 @@ int32_t MainEngine::MainLoop()
         glfwGetFramebufferSize(window, &currentResolution.x, &currentResolution.y);
         glViewport(0, 0, currentResolution.x, currentResolution.y);
 
-        camera->UpdateProjection(currentResolution);
-
         sceneRoot.Update(this, seconds, deltaSeconds);
         sceneRoot.CalculateWorldTransform();
         sceneRoot.Draw();
 
         renderer->Draw();
+
+        if (currentCameraNode == nullptr)
+            SPDLOG_ERROR("No active CameraNode");
 
         UpdateWidget(deltaSeconds);
         ImGui::Render();
@@ -132,11 +130,16 @@ void MainEngine::UpdateWidget(float DeltaSeconds)
 {
     ImGui::Begin("Yet another 2D Engine");
     ImGui::Text("Framerate: %.3f (%.1f FPS)", DeltaSeconds, 1 / DeltaSeconds);
+
+    float cameraScale = currentCameraNode->GetScale();
+    ImGui::SliderFloat("Camera Scale", &cameraScale, 1.f, 256.f);
+    currentCameraNode->SetScale(cameraScale);
+
     ImGui::End();
 }
 
 MainEngine::MainEngine()
-: sceneRoot()
+: sceneRoot(), currentCameraNode(nullptr)
 {
 }
 
@@ -193,7 +196,10 @@ void MainEngine::PrepareScene() {
     auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
     auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer.get());
     auto playerNode = std::make_shared<PlayerNode>();
+    auto cameraNode = std::make_shared<CameraNode>(this);
+    cameraNode->MakeCurrent();
     playerNode->AddChild(playerSpriteNode);
+    playerNode->AddChild(cameraNode);
     sceneRoot.AddChild(playerNode);
 
     sceneRoot.CalculateWorldTransform();
@@ -220,10 +226,6 @@ std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer) {
 
 GLFWwindow *MainEngine::GetWindow() const {
     return window;
-}
-
-const std::unique_ptr<struct Camera> &MainEngine::GetCamera() const {
-    return camera;
 }
 
 Node &MainEngine::GetSceneRoot() {

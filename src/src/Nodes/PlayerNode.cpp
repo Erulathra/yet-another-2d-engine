@@ -12,8 +12,6 @@ PlayerNode::PlayerNode()
 }
 
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {
-    RigidbodyNode::Update(engine, seconds, deltaSeconds);
-
     glm::vec2 input = GetMovementInput(engine);
 
     glm::vec2 newAcceleration;
@@ -26,6 +24,8 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
     newAcceleration.y = gravityAcceleration;
 
     SetAcceleration(newAcceleration);
+
+    RigidbodyNode::Update(engine, seconds, deltaSeconds);
 }
 
 glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {

@@ -7,21 +7,27 @@
 
 class Camera {
 private:
-    glm::vec3 Position;
+    glm::vec3 position;
 
-    GLuint UboTransformMatrices;
+    GLuint uboTransformMatrices;
 
+    float scale;
     glm::vec<2, int> Resolution;
 public:
     Camera();
 
     ~Camera();
 
-    void SetPosition(glm::vec3 NewPosition);
+    void SetPosition(glm::vec3 newPosition);
 
     [[nodiscard]] glm::mat4 GetCameraProjectionMatrix(glm::vec<2, int> resolution) const;
 
     void UpdateProjection(glm::vec<2, int> resolution);
+
+    [[nodiscard]] float GetScale() const;
+
+    void SetScale(float scale);
+
 private:
     void UpdateView();
 };

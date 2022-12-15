@@ -13,7 +13,7 @@ class MainEngine {
 private:
     GLFWwindow* window;
 
-    std::unique_ptr<class Camera> camera;
+    class CameraNode* currentCameraNode;
     Node sceneRoot;
     std::unique_ptr<class SpriteRenderer> renderer;
 
@@ -27,10 +27,9 @@ public:
 
     GLFWwindow *GetWindow() const;
 
-    const std::unique_ptr<struct Camera> &GetCamera() const;
-
     Node &GetSceneRoot();
 
+    friend class CameraNode;
 private:
     void Stop();
 

@@ -46,8 +46,8 @@ GLuint SpriteRenderer::TextureFromFile(const std::string &path) {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         tileMapSize = width;
 
@@ -140,10 +140,9 @@ void SpriteRenderer::Draw() {
             return matrixA[3][2] < matrixB[3][2];
     };
 
-    std::sort(nodes.begin(), nodes.end(), comparator);
-
     for (SpriteNode *node: nodes) {
         if (node->WasDirtyThisFrame()) {
+            std::sort(nodes.begin(), nodes.end(), comparator);
             UpdateMatrixBuffer();
             UpdateTilePositionBuffer();
             break;
