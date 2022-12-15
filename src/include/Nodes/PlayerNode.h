@@ -4,11 +4,14 @@
 
 class PlayerNode: public RigidbodyNode{
 private:
-    float gravityAcceleration = -5.f;
+    float gravityAcceleration;
+    float startJumpVelocity;
 public:
     PlayerNode();
 
     void Update(struct MainEngine *engine, float seconds, float deltaSeconds) override;
+
+    void SetJumpParameters(float targetHeight, float timeToJumpApex);
 private:
     glm::vec2 GetMovementInput(MainEngine* Engine);
 };

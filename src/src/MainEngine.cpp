@@ -220,7 +220,7 @@ std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer) {
 
     std::map<char, Node *> nodesMap;
     nodesMap['#'] = brickRigidBody.get();
-    nodesMap[' '] = path.get();
+    nodesMap['*'] = path.get();
     return std::make_shared<Map>("res/other/map", nodesMap);
 }
 

@@ -7,8 +7,9 @@
 #include "Nodes/CollisionShapes/CollisionShapeFactory.h"
 
 PlayerNode::PlayerNode()
-: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f)){
+: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1.f - (1.f/32.f), 1.f - (1.f/32.f))){
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
+    SetJumpParameters(2.f, 0.5f);
 }
 
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {
@@ -22,6 +23,12 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
         newAcceleration.x = GetVelocity().x * -10.f;
 
     newAcceleration.y = gravityAcceleration;
+
+    if (input.y > 0){
+        glm::vec2 newVelocity = GetVelocity();
+        newVelocity.y = startJumpVelocity;
+        SetVelocity(newVelocity);
+    }
 
     SetAcceleration(newAcceleration);
 
@@ -41,5 +48,10 @@ glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {
         input += glm::vec2(1, 0);
 
     return input;
+}
+
+void PlayerNode::SetJumpParameters(float targetHeight, float timeToJumpApex) {
+    startJumpVelocity = 2 * targetHeight / timeToJumpApex;
+    gravityAcceleration = -startJumpVelocity / timeToJumpApex;
 }
 
