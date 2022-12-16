@@ -8,7 +8,7 @@
 #include "Nodes/CollisionShapes/CircleCollisionShape.h"
 
 RigidbodyNode::RigidbodyNode(std::shared_ptr<CollisionShapeFactory> collisionShapeFactory)
-        : acceleration(0.f), newAcceleration(0.f), velocity(0.f), isKinematic(false) {
+        : acceleration(0.f), newAcceleration(0.f), velocity(0.f), isKinematic(false), isTrigger(false) {
     collisionShape = collisionShapeFactory->Build();
 }
 
@@ -34,11 +34,12 @@ std::shared_ptr<Node> RigidbodyNode::Clone() const {
     result->velocity = velocity;
     result->collisionShape = collisionShape->Clone();
     result->isKinematic = isKinematic;
+    result->isTrigger = isTrigger;
     return result;
 }
 
 RigidbodyNode::RigidbodyNode(const Node& obj)
-        : Node(obj), acceleration(0.f), newAcceleration(0.f), velocity(0.f) {
+        : Node(obj), acceleration(0.f), newAcceleration(0.f), velocity(0.f), isTrigger(false) {
 
 }
 
@@ -75,6 +76,11 @@ void RigidbodyNode::HandleCollisions(MainEngine* engine) {
 }
 
 void RigidbodyNode::Collide(RigidbodyNode* anotherRigidbodyNode) {
+    overlappedNodesThisFrame.push_back(anotherRigidbodyNode);
+    onCollisionEnter(anotherRigidbodyNode);
+    if (anotherRigidbodyNode->isTrigger)
+        return;
+
     glm::vec2 separationVector = CalculateSeparationVector(this, anotherRigidbodyNode);
 
     if (glm::length(separationVector) <= 0)
@@ -154,5 +160,13 @@ void RigidbodyNode::SetCollisionShape(const std::shared_ptr<CollisionShape>& col
 RigidbodyNode::RigidbodyNode(std::shared_ptr<struct CollisionShape> collisionShape)
         : acceleration(0.f), newAcceleration(0.f), velocity(0.f), isKinematic(false) {
     this->collisionShape = collisionShape;
+}
+
+bool RigidbodyNode::IsTrigger() const {
+    return isTrigger;
+}
+
+std::vector<RigidbodyNode*> RigidbodyNode::GetOverlappedNodesThisFrame() {
+    return overlappedNodesThisFrame;
 }
 

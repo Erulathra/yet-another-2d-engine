@@ -3,6 +3,7 @@
 
 #include "Node.h"
 #include "MainEngine.h"
+#include "eventpp/callbacklist.h"
 
 class RigidbodyNode : public Node {
 private:
@@ -14,10 +15,15 @@ private:
     glm::vec2 newAcceleration;
 
     bool isKinematic;
+    bool isTrigger;
 
     explicit RigidbodyNode(const Node& obj);
 
+    std::vector<RigidbodyNode*> overlappedNodesThisFrame;
+
 public:
+    eventpp::CallbackList<void(RigidbodyNode*)> onCollisionEnter;
+
     explicit RigidbodyNode(std::shared_ptr<class CollisionShapeFactory> collisionShapeFactory);
     explicit RigidbodyNode(std::shared_ptr<class CollisionShape> collisionShape);
 
@@ -27,7 +33,9 @@ public:
     [[nodiscard]] const glm::vec2& GetVelocity() const;
     [[nodiscard]] const glm::vec2& GetAcceleration() const;
     [[nodiscard]] bool IsKinematic() const;
+    [[nodiscard]] bool IsTrigger() const;
     [[nodiscard]] const std::shared_ptr<struct CollisionShape>& GetCollisionShape() const;
+    std::vector<RigidbodyNode*> GetOverlappedNodesThisFrame();
 
     void SetVelocity(const glm::vec2& velocity);
     void SetAcceleration(const glm::vec2& acceleration);
@@ -35,11 +43,9 @@ public:
     void SetCollisionShape(const std::shared_ptr<struct CollisionShape>& collisionShape);
 
 protected:
-    void Collide(RigidbodyNode* anotherRigidbodyNode);
-
     glm::vec2 CalculateSeparationVector(RigidbodyNode* selfRigidbody, RigidbodyNode* anotherRigidbody);
 
     void HandleCollisions(MainEngine* engine);
-
+    void Collide(RigidbodyNode* anotherRigidbodyNode);
     void HandlePhysics(float deltaSeconds);
 };
