@@ -19,9 +19,9 @@
 #include "Nodes/SpriteNode.h"
 #include "Nodes/Map.h"
 #include "Nodes/PlayerNode.h"
+#include "Nodes/TimerNode.h"
 
-int32_t MainEngine::Init()
-{
+int32_t MainEngine::Init() {
     glfwSetErrorCallback(MainEngine::GLFWErrorCallback);
     if (!glfwInit())
         return 1;
@@ -35,8 +35,7 @@ int32_t MainEngine::Init()
     if (InitializeWindow() != 0)
         return 1;
 
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-    {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         SPDLOG_ERROR("Failed to initialize GLAD!");
         return 1;
     }
@@ -57,11 +56,9 @@ int32_t MainEngine::Init()
     return 0;
 }
 
-int32_t MainEngine::InitializeWindow()
-{
+int32_t MainEngine::InitializeWindow() {
     window = glfwCreateWindow(640, 480, "Yet another 2D Engine", nullptr, nullptr);
-    if (window == nullptr)
-    {
+    if (window == nullptr) {
         SPDLOG_ERROR("Failed to create OpenGL Window");
         return 1;
     }
@@ -71,13 +68,11 @@ int32_t MainEngine::InitializeWindow()
     return 0;
 }
 
-void MainEngine::GLFWErrorCallback(int Error, const char* Description)
-{
+void MainEngine::GLFWErrorCallback(int Error, const char* Description) {
     SPDLOG_ERROR("GLFW Error {}: {}", Error, Description);
 }
 
-int32_t MainEngine::MainLoop()
-{
+int32_t MainEngine::MainLoop() {
     auto startProgramTimePoint = std::chrono::high_resolution_clock::now();
     float previousFrameSeconds = 0;
 
@@ -85,8 +80,7 @@ int32_t MainEngine::MainLoop()
     CheckGLErrors();
 #endif
 
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
         // TimeCalculation
         std::chrono::duration<float> timeFromStart = std::chrono::high_resolution_clock::now() - startProgramTimePoint;
         float seconds = timeFromStart.count();
@@ -126,8 +120,7 @@ int32_t MainEngine::MainLoop()
     return 0;
 }
 
-void MainEngine::UpdateWidget(float DeltaSeconds)
-{
+void MainEngine::UpdateWidget(float DeltaSeconds) {
     ImGui::Begin("Yet another 2D Engine");
     ImGui::Text("Framerate: %.3f (%.1f FPS)", DeltaSeconds, 1 / DeltaSeconds);
 
@@ -139,16 +132,14 @@ void MainEngine::UpdateWidget(float DeltaSeconds)
 }
 
 MainEngine::MainEngine()
-: sceneRoot(), currentCameraNode(nullptr)
-{
+        : sceneRoot(), currentCameraNode(nullptr) {
 }
 
-void MainEngine::InitializeImGui(const char* GLSLVersion)
-{
+void MainEngine::InitializeImGui(const char* GLSLVersion) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    (void) io;
+    (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 
@@ -159,13 +150,11 @@ void MainEngine::InitializeImGui(const char* GLSLVersion)
     ImGui::StyleColorsDark();
 }
 
-MainEngine::~MainEngine()
-{
+MainEngine::~MainEngine() {
     Stop();
 }
 
-void MainEngine::Stop()
-{
+void MainEngine::Stop() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -177,8 +166,7 @@ void MainEngine::Stop()
     glfwTerminate();
 }
 
-void MainEngine::CheckGLErrors()
-{
+void MainEngine::CheckGLErrors() {
     GLenum error;
 
     while ((error = glGetError()) != GL_NO_ERROR)
@@ -218,16 +206,16 @@ std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer) {
     brickRigidBody->SetIsKinematic(true);
 
 
-    std::map<char, Node *> nodesMap;
+    std::map<char, Node*> nodesMap;
     nodesMap['#'] = brickRigidBody.get();
     nodesMap['*'] = path.get();
     return std::make_shared<Map>("res/other/map", nodesMap);
 }
 
-GLFWwindow *MainEngine::GetWindow() const {
+GLFWwindow* MainEngine::GetWindow() const {
     return window;
 }
 
-Node &MainEngine::GetSceneRoot() {
+Node& MainEngine::GetSceneRoot() {
     return sceneRoot;
 }
