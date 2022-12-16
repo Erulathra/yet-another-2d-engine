@@ -40,6 +40,7 @@ public:
     void SetVelocity(const glm::vec2& velocity);
     void SetAcceleration(const glm::vec2& acceleration);
     void SetIsKinematic(bool isKinematic);
+    void SetIsTrigger(bool isTrigger);
     void SetCollisionShape(const std::shared_ptr<struct CollisionShape>& collisionShape);
 
 protected:

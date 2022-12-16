@@ -5,11 +5,35 @@
 #include "LoggingMacros.h"
 
 #include "Nodes/CollisionShapes/CollisionShapeFactory.h"
+#include "Nodes/CameraNode.h"
+#include "Sprite.h"
 
-PlayerNode::PlayerNode()
-: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1.f - (1.f/32.f), 1.f - (1.f/32.f))){
+PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
+: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f - (1.f/32.f))){
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
     SetJumpParameters(2.f, 0.5f);
+
+    auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
+    auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer);
+    AddChild(playerSpriteNode);
+
+    auto cameraNode = std::make_shared<CameraNode>(engine);
+    cameraNode->MakeCurrent();
+    AddChild(cameraNode);
+
+    auto jumpTrigger = std::make_shared<RigidbodyNode>(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(0.2f, 1.f));
+    jumpTrigger->GetLocalTransform()->SetPosition({0.f, -0.5f, 0.f});
+    jumpTrigger->SetIsTrigger(true);
+    jumpTrigger->onCollisionEnter.append([jumpTrigger](RigidbodyNode* anotherNode){
+        SPDLOG_DEBUG("{}", jumpTrigger->GetOverlappedNodesThisFrame().size());
+    });
+    AddChild(jumpTrigger);
+
+    auto debugSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
+    auto debugSpriteNode = std::make_shared<SpriteNode>(debugSprite, renderer);
+    debugSpriteNode->GetLocalTransform()->SetScale({1.f, 0.2f, 1.f});
+    debugSpriteNode->GetLocalTransform()->SetPosition({0.f, 0.f, 10.f});
+    jumpTrigger->AddChild(debugSpriteNode);
 }
 
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {

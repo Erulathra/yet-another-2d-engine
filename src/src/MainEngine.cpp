@@ -181,13 +181,7 @@ void MainEngine::PrepareScene() {
     map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
     sceneRoot.AddChild(map);
 
-    auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
-    auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer.get());
-    auto playerNode = std::make_shared<PlayerNode>();
-    auto cameraNode = std::make_shared<CameraNode>(this);
-    cameraNode->MakeCurrent();
-    playerNode->AddChild(playerSpriteNode);
-    playerNode->AddChild(cameraNode);
+    auto playerNode = std::make_shared<PlayerNode>(this, renderer.get());
     sceneRoot.AddChild(playerNode);
 
     sceneRoot.CalculateWorldTransform();

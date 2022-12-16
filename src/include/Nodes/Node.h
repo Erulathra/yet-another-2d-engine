@@ -12,7 +12,7 @@ private:
     std::shared_ptr<Transform> localTransform;
     glm::mat4 worldTransformMatrix;
 
-    Node* Parent;
+    Node* parent;
     std::vector<std::shared_ptr<Node>> childrenList;
 
     bool wasDirty;
@@ -37,6 +37,8 @@ public:
 
     template<typename Predicate>
     void GetAllNodes(std::vector<Node*>& foundArray, Predicate predicate);
+
+    Node* GetParent() const;
 
 protected:
     virtual void Draw(glm::mat4& parentTransform, bool isDirty);

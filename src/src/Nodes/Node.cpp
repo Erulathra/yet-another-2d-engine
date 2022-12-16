@@ -56,10 +56,10 @@ void Node::CalculateWorldTransform(glm::mat4& parentTransform, bool isDirty)
 
 void Node::AddChild(std::shared_ptr<Node> newChild)
 {
-    if (newChild.get() == this || newChild.get() == Parent)
+    if (newChild.get() == this || newChild.get() == parent)
         return;
 
-    newChild->Parent = newChild.get();
+    newChild->parent = this;
     childrenList.push_back(newChild);
     newChild->CalculateWorldTransform(worldTransformMatrix, true);
 }
@@ -98,6 +98,10 @@ glm::vec3 Node::GetWorldPosition() const {
 
 const std::vector<std::shared_ptr<Node>>& Node::GetChildrenList() const {
     return childrenList;
+}
+
+Node* Node::GetParent() const {
+    return parent;
 }
 
 

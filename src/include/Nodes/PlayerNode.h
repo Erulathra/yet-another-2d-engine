@@ -7,7 +7,7 @@ private:
     float gravityAcceleration;
     float startJumpVelocity;
 public:
-    PlayerNode();
+    PlayerNode(class MainEngine* engine, class SpriteRenderer* renderer);
 
     void Update(struct MainEngine *engine, float seconds, float deltaSeconds) override;
 

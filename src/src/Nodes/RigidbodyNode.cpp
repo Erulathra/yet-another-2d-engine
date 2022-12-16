@@ -49,7 +49,10 @@ void RigidbodyNode::Update(MainEngine* engine, float seconds, float deltaSeconds
     if (isKinematic)
         return;
 
-    HandlePhysics(deltaSeconds);
+    if (!isTrigger)
+        HandlePhysics(deltaSeconds);
+
+    overlappedNodesThisFrame.clear();
     HandleCollisions(engine);
 }
 
@@ -71,19 +74,21 @@ void RigidbodyNode::HandleCollisions(MainEngine* engine) {
 
     for (auto node: foundNodes) {
         auto* rigidbodyNode = dynamic_cast<RigidbodyNode*>(node);
-        Collide(rigidbodyNode);
+        if (node != GetParent())
+            Collide(rigidbodyNode);
     }
 }
 
 void RigidbodyNode::Collide(RigidbodyNode* anotherRigidbodyNode) {
-    overlappedNodesThisFrame.push_back(anotherRigidbodyNode);
-    onCollisionEnter(anotherRigidbodyNode);
-    if (anotherRigidbodyNode->isTrigger)
-        return;
-
     glm::vec2 separationVector = CalculateSeparationVector(this, anotherRigidbodyNode);
 
     if (glm::length(separationVector) <= 0)
+        return;
+
+    overlappedNodesThisFrame.push_back(anotherRigidbodyNode);
+    onCollisionEnter(anotherRigidbodyNode);
+
+    if (isTrigger || anotherRigidbodyNode->isTrigger)
         return;
 
     glm::vec3 position = GetLocalTransform()->GetPosition();
@@ -168,5 +173,9 @@ bool RigidbodyNode::IsTrigger() const {
 
 std::vector<RigidbodyNode*> RigidbodyNode::GetOverlappedNodesThisFrame() {
     return overlappedNodesThisFrame;
+}
+
+void RigidbodyNode::SetIsTrigger(bool isTrigger) {
+    RigidbodyNode::isTrigger = isTrigger;
 }
 
