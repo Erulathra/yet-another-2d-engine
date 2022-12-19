@@ -45,7 +45,7 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
     glm::vec2 newAcceleration;
 
     if (std::abs(GetVelocity().x) < playerSpeed && std::abs(input.x) > 0 )
-        newAcceleration.x = input.x * 50.f;
+        newAcceleration.x = input.x * 100.f;
     else
         newAcceleration.x = GetVelocity().x * -10.f;
 
