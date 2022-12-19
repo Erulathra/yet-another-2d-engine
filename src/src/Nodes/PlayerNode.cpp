@@ -21,19 +21,19 @@ PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
     cameraNode->MakeCurrent();
     AddChild(cameraNode);
 
-    auto jumpTrigger = std::make_shared<RigidbodyNode>(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(0.2f, 1.f));
-    jumpTrigger->GetLocalTransform()->SetPosition({0.f, -0.5f, 0.f});
+    auto jumpTrigger = std::make_shared<RigidbodyNode>(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(0.15f, 0.7f));
+    jumpTrigger->GetLocalTransform()->SetPosition({0.f, -0.5, 0.f});
     jumpTrigger->SetIsTrigger(true);
-    jumpTrigger->onCollisionEnter.append([jumpTrigger](RigidbodyNode* anotherNode){
-        SPDLOG_DEBUG("{}", jumpTrigger->GetOverlappedNodesThisFrame().size());
-    });
     AddChild(jumpTrigger);
 
+#ifdef DEBUG
     auto debugSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
     auto debugSpriteNode = std::make_shared<SpriteNode>(debugSprite, renderer);
-    debugSpriteNode->GetLocalTransform()->SetScale({1.f, 0.2f, 1.f});
+    debugSpriteNode->GetLocalTransform()->SetScale({0.7f, 0.15f, 1.f});
     debugSpriteNode->GetLocalTransform()->SetPosition({0.f, 0.f, 10.f});
     jumpTrigger->AddChild(debugSpriteNode);
+#endif
+
 }
 
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {
@@ -48,7 +48,13 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
 
     newAcceleration.y = gravityAcceleration;
 
-    if (input.y > 0){
+    auto jumpTrigger = dynamic_cast<RigidbodyNode*>(GetChild([](Node* node) -> bool {
+        return dynamic_cast<RigidbodyNode*>(node) != nullptr;
+    }));
+
+    bool isGrounded = !jumpTrigger->GetOverlappedNodesThisFrame().empty();
+
+    if (input.y > 0 && isGrounded){
         glm::vec2 newVelocity = GetVelocity();
         newVelocity.y = startJumpVelocity;
         SetVelocity(newVelocity);

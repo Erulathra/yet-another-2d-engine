@@ -125,7 +125,7 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
     ImGui::Text("Framerate: %.3f (%.1f FPS)", DeltaSeconds, 1 / DeltaSeconds);
 
     float cameraScale = currentCameraNode->GetScale();
-    ImGui::SliderFloat("Camera Scale", &cameraScale, 1.f, 256.f);
+    ImGui::DragFloat("Camera Scale", &cameraScale, 1.f, 256.f);
     currentCameraNode->SetScale(cameraScale);
 
     ImGui::End();

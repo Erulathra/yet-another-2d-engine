@@ -38,6 +38,9 @@ public:
     template<typename Predicate>
     void GetAllNodes(std::vector<Node*>& foundArray, Predicate predicate);
 
+    template<typename Predicate>
+    Node* GetChild(Predicate predicate);
+
     Node* GetParent() const;
 
 protected:
@@ -53,6 +56,16 @@ void Node::GetAllNodes(std::vector<Node*> &foundArray, Predicate predicate) {
     for (const auto& node : childrenList) {
         node->GetAllNodes(foundArray, predicate);
     }
+}
+
+template<typename Predicate>
+Node* Node::GetChild(Predicate predicate) {
+    for (std::shared_ptr<Node> child : childrenList)
+    {
+        if (predicate(child.get()))
+            return child.get();
+    }
+    return nullptr;
 }
 
 #endif //SOLARSYSTEM_NODE_H
