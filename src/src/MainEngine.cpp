@@ -125,8 +125,22 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
     ImGui::Text("Framerate: %.3f (%.1f FPS)", DeltaSeconds, 1 / DeltaSeconds);
 
     float cameraScale = currentCameraNode->GetScale();
-    ImGui::DragFloat("Camera Scale", &cameraScale, 1.f, 256.f);
+    ImGui::DragFloat("Camera Scale", &cameraScale, 0.5f, 1.f, 256.f);
     currentCameraNode->SetScale(cameraScale);
+
+    auto Player = dynamic_cast<PlayerNode*>(sceneRoot.GetChild([](Node* node) -> bool {
+        return dynamic_cast<PlayerNode*>(node) != nullptr;
+    }));
+
+    constinit static float jumpHeight = 2.f;
+    constinit static float jumpDistance = 4.0f;
+
+    ImGui::DragFloat("Jump Height", &jumpHeight, 0.1f, 0.5f, 32.f);
+    ImGui::DragFloat("Jump Distance", &jumpDistance, 0.1f, 0.5f, 32.f);
+
+    Player->SetJumpParameters(jumpHeight, jumpDistance);
+
+    ImGui::Text("g: %.1f, v0: %.1f", Player->GetGravityAcceleration(), Player->GetStartJumpVelocity());
 
     ImGui::End();
 }

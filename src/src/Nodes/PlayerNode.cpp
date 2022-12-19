@@ -12,6 +12,7 @@ PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
 : RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f - (1.f/32.f))){
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
     SetJumpParameters(2.f, 0.5f);
+    playerSpeed = 7.f;
 
     auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
     auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer);
@@ -41,7 +42,7 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
 
     glm::vec2 newAcceleration;
 
-    if (std::abs(GetVelocity().x) < 5.f && std::abs(input.x) > 0 )
+    if (std::abs(GetVelocity().x) < playerSpeed && std::abs(input.x) > 0 )
         newAcceleration.x = input.x * 50.f;
     else
         newAcceleration.x = GetVelocity().x * -10.f;
@@ -80,8 +81,17 @@ glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {
     return input;
 }
 
-void PlayerNode::SetJumpParameters(float targetHeight, float timeToJumpApex) {
-    startJumpVelocity = 2 * targetHeight / timeToJumpApex;
-    gravityAcceleration = -startJumpVelocity / timeToJumpApex;
+void PlayerNode::SetJumpParameters(float targetHeight, float targetDistance) {
+    float jumpTime = (targetDistance / playerSpeed) / 2.f;
+    startJumpVelocity = 2 * targetHeight / jumpTime;
+    gravityAcceleration = -startJumpVelocity / jumpTime;
+}
+
+float PlayerNode::GetGravityAcceleration() const {
+    return gravityAcceleration;
+}
+
+float PlayerNode::GetStartJumpVelocity() const {
+    return startJumpVelocity;
 }
 
