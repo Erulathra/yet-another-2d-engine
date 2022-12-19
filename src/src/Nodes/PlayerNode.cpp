@@ -14,6 +14,7 @@ PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
     SetJumpParameters(2.f, 0.5f);
     playerSpeed = 7.f;
     fallGravityFactor = 0.8f;
+    buttonPressJumpGravityFactor = 0.5f;
 
     auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
     auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer);
@@ -66,6 +67,11 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
         newAcceleration.y *= fallGravityFactor;
     }
 
+    if (input.y > 0.f)
+    {
+        newAcceleration.y *= buttonPressJumpGravityFactor;
+    }
+
     SetAcceleration(newAcceleration);
 
     RigidbodyNode::Update(engine, seconds, deltaSeconds);
@@ -90,7 +96,7 @@ void PlayerNode::SetJumpParameters(float targetHeight, float targetDistance) {
     float jumpTime = (targetDistance / 4.f) / playerSpeed;
     jumpTime += (targetDistance / 4.f) / playerSpeed * fallGravityFactor;
     startJumpVelocity = 2 * targetHeight / jumpTime;
-    gravityAcceleration = -startJumpVelocity / jumpTime;
+    gravityAcceleration = (-startJumpVelocity / jumpTime) / buttonPressJumpGravityFactor;
 }
 
 float PlayerNode::GetGravityAcceleration() const {
@@ -111,5 +117,9 @@ void PlayerNode::SetPlayerSpeed(float playerSpeed) {
 
 void PlayerNode::SetFallGravityFactor(float fallGravityFactor) {
     PlayerNode::fallGravityFactor = fallGravityFactor;
+}
+
+void PlayerNode::SetButtonPressJumpGravityFactor(float buttonPressJumpGravityFactor) {
+    PlayerNode::buttonPressJumpGravityFactor = buttonPressJumpGravityFactor;
 }
 

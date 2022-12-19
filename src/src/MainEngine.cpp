@@ -134,7 +134,8 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
 
     constinit static float jumpHeight = 2.f;
     constinit static float jumpDistance = 4.0f;
-    constinit static float fallGravityFactor = 0.7f;
+    constinit static float fallGravityFactor = 1.4f;
+    constinit static float buttonPressGravityFactor = 0.5f;
 
     ImGui::DragFloat("Jump Height", &jumpHeight, 0.1f, 0.5f, 32.f);
     ImGui::DragFloat("Jump Distance", &jumpDistance, 0.1f, 0.5f, 32.f);
@@ -142,9 +143,11 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
     ImGui::Text("g: %.1f, v0: %.1f", Player->GetGravityAcceleration(), Player->GetStartJumpVelocity());
     ImGui::Separator();
 
-    ImGui::DragFloat("Fall gravity factor", &fallGravityFactor, 0.1f, 0.5f, 32.f);
+    ImGui::DragFloat("Fall gravity factor", &fallGravityFactor, 0.05f, 0.1f, 1.f);
+    ImGui::DragFloat("Short Jump factor", &buttonPressGravityFactor, 0.05f, 0.1f, 1.f);
 
     Player->SetFallGravityFactor(fallGravityFactor);
+    Player->SetButtonPressJumpGravityFactor(buttonPressGravityFactor);
     Player->SetJumpParameters(jumpHeight, jumpDistance);
 
     ImGui::End();
