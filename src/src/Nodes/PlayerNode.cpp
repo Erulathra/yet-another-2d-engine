@@ -13,6 +13,7 @@ PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
     SetJumpParameters(2.f, 0.5f);
     playerSpeed = 7.f;
+    fallGravityFactor = 0.8f;
 
     auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
     auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer);
@@ -47,8 +48,6 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
     else
         newAcceleration.x = GetVelocity().x * -10.f;
 
-    newAcceleration.y = gravityAcceleration;
-
     auto jumpTrigger = dynamic_cast<RigidbodyNode*>(GetChild([](Node* node) -> bool {
         return dynamic_cast<RigidbodyNode*>(node) != nullptr;
     }));
@@ -59,6 +58,12 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
         glm::vec2 newVelocity = GetVelocity();
         newVelocity.y = startJumpVelocity;
         SetVelocity(newVelocity);
+    }
+
+    newAcceleration.y = gravityAcceleration;
+
+    if (!isGrounded && GetVelocity().y < 0.f) {
+        newAcceleration.y *= fallGravityFactor;
     }
 
     SetAcceleration(newAcceleration);
@@ -82,7 +87,8 @@ glm::vec2 PlayerNode::GetMovementInput(MainEngine *engine) {
 }
 
 void PlayerNode::SetJumpParameters(float targetHeight, float targetDistance) {
-    float jumpTime = (targetDistance / playerSpeed) / 2.f;
+    float jumpTime = (targetDistance / 4.f) / playerSpeed;
+    jumpTime += (targetDistance / 4.f) / playerSpeed * fallGravityFactor;
     startJumpVelocity = 2 * targetHeight / jumpTime;
     gravityAcceleration = -startJumpVelocity / jumpTime;
 }
@@ -93,5 +99,17 @@ float PlayerNode::GetGravityAcceleration() const {
 
 float PlayerNode::GetStartJumpVelocity() const {
     return startJumpVelocity;
+}
+
+float PlayerNode::GetFallGravityFactor() const {
+    return fallGravityFactor;
+}
+
+void PlayerNode::SetPlayerSpeed(float playerSpeed) {
+    PlayerNode::playerSpeed = playerSpeed;
+}
+
+void PlayerNode::SetFallGravityFactor(float fallGravityFactor) {
+    PlayerNode::fallGravityFactor = fallGravityFactor;
 }
 

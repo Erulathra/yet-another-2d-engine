@@ -7,15 +7,19 @@ private:
     float gravityAcceleration;
     float startJumpVelocity;
     float playerSpeed;
+    float fallGravityFactor;
 public:
     PlayerNode(class MainEngine* engine, class SpriteRenderer* renderer);
 
     void Update(struct MainEngine *engine, float seconds, float deltaSeconds) override;
 
     void SetJumpParameters(float targetHeight, float targetDistance);
+    void SetPlayerSpeed(float playerSpeed);
+    void SetFallGravityFactor(float fallGravityFactor);
 
     float GetGravityAcceleration() const;
     float GetStartJumpVelocity() const;
+    float GetFallGravityFactor() const;
 
 private:
     glm::vec2 GetMovementInput(MainEngine* Engine);
