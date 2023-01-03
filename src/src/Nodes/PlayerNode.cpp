@@ -11,10 +11,11 @@
 PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
 : RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f - (1.f/32.f))){
     GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
-    SetJumpParameters(2.f, 0.5f);
     playerSpeed = 7.f;
     fallGravityFactor = 0.8f;
     buttonPressJumpGravityFactor = 0.5f;
+    SetJumpParameters(2.f, 0.5f);
+
 
     auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
     auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer);
@@ -42,7 +43,7 @@ PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
 void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSeconds) {
     glm::vec2 input = GetMovementInput(engine);
 
-    glm::vec2 newAcceleration;
+    glm::vec2 newAcceleration = GetAcceleration();
 
     if (std::abs(GetVelocity().x) < playerSpeed && std::abs(input.x) > 0 )
         newAcceleration.x = input.x * 100.f;
