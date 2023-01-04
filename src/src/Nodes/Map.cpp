@@ -11,9 +11,12 @@ Map::Map(const std::string &path, const std::map<char, struct Node *> &nodesMap)
 
     while (std::getline(file, FileLine)) {
         for (char character : FileLine) {
-            auto tile = nodesMap.at(character)->Clone();
-            tile->GetLocalTransform()->SetPosition(glm::vec3(characterNumber, -lineNumber, 0));
-            AddChild(tile);
+            if (nodesMap.at(character) != nullptr)
+            {
+                auto tile = nodesMap.at(character)->Clone();
+                tile->GetLocalTransform()->SetPosition(glm::vec3(characterNumber, -lineNumber, 0));
+                AddChild(tile);
+            }
 
             characterNumber++;
         }

@@ -38,4 +38,8 @@ private:
     void InitializeImGui(const char* GLSLVersion);
     void UpdateWidget(float DeltaSeconds);
     static  void CheckGLErrors();
+
+    std::shared_ptr<class RigidbodyNode> CreateRigidbodyTile(const std::shared_ptr<class Sprite>& sprite);
+
+    std::shared_ptr<class Map> CreateNodeMap();
 };

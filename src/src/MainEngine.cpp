@@ -49,9 +49,9 @@ int32_t MainEngine::Init() {
 
     InitializeImGui(GLSLVersion);
 
-    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClearColor(0.173f, 0.129f, 0.216f, 1.f);
 
-    renderer = std::make_unique<SpriteRenderer>("res/textures/TileMap.png", 32);
+    renderer = std::make_unique<SpriteRenderer>("res/textures/TileMap.png", 8);
 
     return 0;
 }
@@ -200,37 +200,57 @@ void MainEngine::CheckGLErrors() {
         SPDLOG_ERROR("OpenGL error: {}", error);
 }
 
-std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer);
-
 void MainEngine::PrepareScene() {
-    auto map = CreateNodeMap(renderer.get());
+    auto map = CreateNodeMap();
     glm::vec2 mapSize = map->GetSize();
     map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
     sceneRoot.AddChild(map);
 
     auto playerNode = std::make_shared<PlayerNode>(this, renderer.get());
+    playerNode->GetLocalTransform()->SetPosition({0.f, 3.f, 2.f});
     sceneRoot.AddChild(playerNode);
 
     sceneRoot.CalculateWorldTransform();
 }
 
-std::shared_ptr<Map> CreateNodeMap(SpriteRenderer* renderer) {
-    auto brownBricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 1));
-    auto bricksSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 1));
+std::shared_ptr<Map> MainEngine::CreateNodeMap() {
+    auto cornerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 0));
+    auto horizontalSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 0));
+    auto verticalSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
 
-    auto brick = std::make_shared<SpriteNode>(bricksSprite, renderer);
-    auto path = std::make_shared<SpriteNode>(brownBricksSprite, renderer);
+    auto horizontalTileNode = CreateRigidbodyTile(horizontalSprite);
+    auto revertedHorizontalTileNode = CreateRigidbodyTile(horizontalSprite);
+    revertedHorizontalTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(1.f, 0.f, 0.f)));
 
-    auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1, 1);
-    auto brickRigidBody = std::make_shared<RigidbodyNode>(collisionShapeFactory);
-    brickRigidBody->AddChild(brick);
-    brickRigidBody->SetIsKinematic(true);
+    auto verticalTileNode = CreateRigidbodyTile(verticalSprite);
+    auto revertedVerticalTileNode = CreateRigidbodyTile(verticalSprite);
+    revertedVerticalTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f)));
 
+    auto leftUpTileNode = CreateRigidbodyTile(cornerSprite);
+    auto rightUpTileNode = CreateRigidbodyTile(cornerSprite);
+    rightUpTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f)));
 
     std::map<char, Node*> nodesMap;
-    nodesMap['#'] = brickRigidBody.get();
-    nodesMap['*'] = path.get();
+    nodesMap['H'] = horizontalTileNode.get();
+    nodesMap['h'] = revertedHorizontalTileNode.get();
+    nodesMap['v'] = verticalTileNode.get();
+    nodesMap['V'] = revertedVerticalTileNode.get();
+    nodesMap['R'] = rightUpTileNode.get();
+    nodesMap['L'] = leftUpTileNode.get();
+    nodesMap[' '] = nullptr;
     return std::make_shared<Map>("res/other/map", nodesMap);
+}
+
+std::shared_ptr<RigidbodyNode> MainEngine::CreateRigidbodyTile(const std::shared_ptr<Sprite>& sprite)
+{
+    auto collisionShapeFactory = CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(1, 1);
+
+    auto spriteNode = std::make_shared<SpriteNode>(sprite, renderer.get());
+    auto rigidbodyNode = std::make_shared<RigidbodyNode>(collisionShapeFactory);
+    rigidbodyNode->AddChild(spriteNode);
+    rigidbodyNode->SetIsKinematic(true);
+
+    return rigidbodyNode;
 }
 
 GLFWwindow* MainEngine::GetWindow() const {

@@ -44,16 +44,16 @@ RigidbodyNode::RigidbodyNode(const Node& obj)
 }
 
 void RigidbodyNode::Update(MainEngine* engine, float seconds, float deltaSeconds) {
-    Node::Update(engine, seconds, deltaSeconds);
-
     if (isKinematic)
         return;
 
-    if (!isTrigger)
+    if (!isTrigger && deltaSeconds < 1.f / 30.f)
         HandlePhysics(deltaSeconds);
 
     overlappedNodesThisFrame.clear();
     HandleCollisions(engine);
+
+    Node::Update(engine, seconds, deltaSeconds);
 }
 
 void RigidbodyNode::HandlePhysics(float deltaSeconds) {
