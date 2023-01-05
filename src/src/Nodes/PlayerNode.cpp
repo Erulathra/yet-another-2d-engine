@@ -10,7 +10,6 @@
 
 PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
 : RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f - (1.f/32.f))){
-    GetLocalTransform()->SetPosition(glm::vec3(0.f, 0.f, 2.f));
     playerSpeed = 7.f;
     fallGravityFactor = 0.8f;
     buttonPressJumpGravityFactor = 0.5f;
@@ -23,6 +22,7 @@ PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
 
     auto cameraNode = std::make_shared<CameraNode>(engine);
     cameraNode->MakeCurrent();
+    cameraNode->GetLocalTransform()->SetPosition({0.f, 2.f, 20.f});
     AddChild(cameraNode);
 
     auto jumpTrigger = std::make_shared<RigidbodyNode>(CollisionShapeFactory::CreateFactory()->CreateRectangleCollisionShape(0.15f, 0.7f));

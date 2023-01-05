@@ -49,7 +49,7 @@ int32_t MainEngine::Init() {
 
     InitializeImGui(GLSLVersion);
 
-    glClearColor(0.173f, 0.129f, 0.216f, 1.f);
+    glClearColor(0.929f, 0.706f, 0.631f, 1.f);
 
     renderer = std::make_unique<SpriteRenderer>("res/textures/TileMap.png", 8);
 
@@ -207,7 +207,7 @@ void MainEngine::PrepareScene() {
     sceneRoot.AddChild(map);
 
     auto playerNode = std::make_shared<PlayerNode>(this, renderer.get());
-    playerNode->GetLocalTransform()->SetPosition({0.f, 3.f, 2.f});
+    playerNode->GetLocalTransform()->SetPosition({0.f, 0.f, 2.f});
     sceneRoot.AddChild(playerNode);
 
     sceneRoot.CalculateWorldTransform();
@@ -217,7 +217,10 @@ std::shared_ptr<Map> MainEngine::CreateNodeMap() {
     auto cornerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 0));
     auto horizontalSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 0));
     auto verticalSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
+    auto stoneSprite = std::make_shared<Sprite>(glm::vec<2, int>(3, 1));
+    auto insideCornerSprite = std::make_shared<Sprite>(glm::vec<2, int>(3, 0));
 
+    auto stoneTileNode = std::make_shared<SpriteNode>(stoneSprite, renderer.get());
     auto horizontalTileNode = CreateRigidbodyTile(horizontalSprite);
     auto revertedHorizontalTileNode = CreateRigidbodyTile(horizontalSprite);
     revertedHorizontalTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(1.f, 0.f, 0.f)));
@@ -230,6 +233,21 @@ std::shared_ptr<Map> MainEngine::CreateNodeMap() {
     auto rightUpTileNode = CreateRigidbodyTile(cornerSprite);
     rightUpTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f)));
 
+    auto rightDownTileNode = CreateRigidbodyTile(cornerSprite);
+    rightDownTileNode->GetLocalTransform()->SetRotation(glm::quat({0.f, 0.f, glm::radians(180.f)}));
+    auto leftDownTileNode = CreateRigidbodyTile(cornerSprite);
+    leftDownTileNode->GetLocalTransform()->SetRotation(glm::quat({glm::pi<float>(), 0.f, 0.f}));
+
+    auto innerDownRightNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    auto innerDownLeftNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    innerDownLeftNode->GetLocalTransform()->SetRotation(glm::quat({0.f, glm::radians(180.f), 0.f}));
+
+    auto innerUpRightNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    innerUpRightNode->GetLocalTransform()->SetRotation(glm::quat({glm::radians(180.f), glm::radians(180.f), 0.f}));
+
+    auto innerUpLeftNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    innerUpLeftNode->GetLocalTransform()->SetRotation(glm::quat({glm::radians(180.f), 0.f, 0.f}));
+
     std::map<char, Node*> nodesMap;
     nodesMap['H'] = horizontalTileNode.get();
     nodesMap['h'] = revertedHorizontalTileNode.get();
@@ -237,7 +255,14 @@ std::shared_ptr<Map> MainEngine::CreateNodeMap() {
     nodesMap['V'] = revertedVerticalTileNode.get();
     nodesMap['R'] = rightUpTileNode.get();
     nodesMap['L'] = leftUpTileNode.get();
+    nodesMap['r'] = rightDownTileNode.get();
+    nodesMap['l'] = leftDownTileNode.get();
+    nodesMap['}'] = innerDownRightNode.get();
+    nodesMap['{'] = innerDownLeftNode.get();
+    nodesMap[']'] = innerUpLeftNode.get();
+    nodesMap['['] = innerUpRightNode.get();
     nodesMap[' '] = nullptr;
+    nodesMap['#'] = stoneTileNode.get();
     return std::make_shared<Map>("res/other/map", nodesMap);
 }
 
