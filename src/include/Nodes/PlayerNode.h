@@ -9,6 +9,8 @@ private:
     float playerSpeed;
     float fallGravityFactor;
     float buttonPressJumpGravityFactor;
+
+    std::shared_ptr<Node> playerSprite;
 public:
     PlayerNode(class MainEngine* engine, class SpriteRenderer* renderer);
 
@@ -25,4 +27,5 @@ public:
 
 private:
     glm::vec2 GetMovementInput(MainEngine* Engine);
+    std::shared_ptr<class SpriteArrayNode> CreatePlayerSprite(MainEngine* engine, SpriteRenderer* renderer);
 };

@@ -143,10 +143,11 @@ void SpriteRenderer::Draw() {
         if (node->WasDirtyThisFrame()) {
             std::sort(nodes.begin(), nodes.end(), comparator);
             UpdateMatrixBuffer();
-            UpdateTilePositionBuffer();
             break;
         }
     }
+
+    UpdateTilePositionBuffer();
 
     shader->Activate();
     shader->SetInt("tileSize", tileSize);

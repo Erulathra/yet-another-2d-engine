@@ -4,13 +4,16 @@
 
 #include "Node.h"
 
-class SpriteNode: public Node{
+class SpriteNode: public Node {
 private:
-    std::shared_ptr<class Sprite> sprite;
 
     class SpriteRenderer* renderer;
 
     explicit SpriteNode(const Node &obj);
+
+protected:
+    std::shared_ptr<class Sprite> sprite;
+
 public:
     explicit SpriteNode(const std::shared_ptr<Sprite> &sprite, SpriteRenderer* renderer);
 

@@ -9,4 +9,6 @@ public:
     explicit Sprite(const glm::vec<2, int> &tileMapPosition);
 
     [[nodiscard]] const glm::vec<2, int> &GetTileMapPosition() const;
+
+    friend class SpriteArrayNode;
 };

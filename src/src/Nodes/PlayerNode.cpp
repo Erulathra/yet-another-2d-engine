@@ -5,20 +5,20 @@
 #include "LoggingMacros.h"
 
 #include "Nodes/CollisionShapes/CollisionShapeFactory.h"
+#include "Nodes/SpriteArrayNode.h"
 #include "Nodes/CameraNode.h"
 #include "Sprite.h"
 
 PlayerNode::PlayerNode(MainEngine* engine, SpriteRenderer* renderer)
-: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f - (1.f/32.f))){
+: RigidbodyNode(CollisionShapeFactory::CreateFactory()->CreateCircleCollisionShape(0.5f)) {
     playerSpeed = 7.f;
     fallGravityFactor = 0.8f;
     buttonPressJumpGravityFactor = 0.5f;
     SetJumpParameters(2.f, 0.5f);
 
-
-    auto ballSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 2));
-    auto playerSpriteNode = std::make_shared<SpriteNode>(ballSprite, renderer);
-    AddChild(playerSpriteNode);
+    auto playerSpriteArrayNode = CreatePlayerSprite(engine, renderer);
+    playerSprite = playerSpriteArrayNode;
+    AddChild(playerSpriteArrayNode);
 
     auto cameraNode = std::make_shared<CameraNode>(engine);
     cameraNode->MakeCurrent();
@@ -74,6 +74,15 @@ void PlayerNode::Update(struct MainEngine *engine, float seconds, float deltaSec
     }
 
     SetAcceleration(newAcceleration);
+    glm::vec2 velocity = GetVelocity();
+
+    if (velocity.x > 0)
+    {
+        playerSprite->GetLocalTransform()->SetRotation({{0.f, 0.f, 0.f}});
+    } else {
+        playerSprite->GetLocalTransform()->SetRotation({{0.f, -glm::pi<float>(), 0.f}});
+    }
+
 
     RigidbodyNode::Update(engine, seconds, deltaSeconds);
 }
@@ -122,5 +131,20 @@ void PlayerNode::SetFallGravityFactor(float fallGravityFactor) {
 
 void PlayerNode::SetButtonPressJumpGravityFactor(float buttonPressJumpGravityFactor) {
     PlayerNode::buttonPressJumpGravityFactor = buttonPressJumpGravityFactor;
+}
+
+std::shared_ptr<SpriteArrayNode> PlayerNode::CreatePlayerSprite(MainEngine* engine, SpriteRenderer* renderer) {
+    std::vector<std::shared_ptr<Sprite>> playerSpriteArray = {
+            std::make_shared<Sprite>(glm::ivec2(0, 2)),
+            std::make_shared<Sprite>(glm::ivec2(1, 2)),
+            std::make_shared<Sprite>(glm::ivec2(2, 2)),
+            std::make_shared<Sprite>(glm::ivec2(3, 2))
+    };
+    std::vector<int> animation = {0, 1, 2, 3};
+
+    auto result = std::make_shared<SpriteArrayNode>(playerSpriteArray, renderer);
+    result->PlayAnimation(animation, 0.166f);
+
+    return result;
 }
 
