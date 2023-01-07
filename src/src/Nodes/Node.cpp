@@ -104,7 +104,8 @@ Node* Node::GetParent() const {
     return parent;
 }
 
-
-
-
-
+void Node::Start(struct MainEngine* engine) {
+    for (std::shared_ptr<Node> childNode : childrenList) {
+        childNode->Start(engine);
+    }
+}

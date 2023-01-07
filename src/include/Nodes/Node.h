@@ -22,6 +22,7 @@ public:
     void CalculateWorldTransform();
     void Draw();
     virtual void Update(class MainEngine* engine, float seconds, float deltaSeconds);
+    virtual void Start(class MainEngine* engine);
 
     void AddChild(std::shared_ptr<Node> newChild);
 

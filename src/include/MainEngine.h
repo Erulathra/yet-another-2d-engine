@@ -29,6 +29,9 @@ public:
 
     Node &GetSceneRoot();
 
+    CameraNode* GetCurrentCameraNode();
+    void SetCurrentCameraNode(CameraNode* currentCameraNode);
+
     friend class CameraNode;
 private:
     void Stop();
@@ -42,4 +45,5 @@ private:
     std::shared_ptr<class RigidbodyNode> CreateRigidbodyTile(const std::shared_ptr<class Sprite>& sprite);
 
     std::shared_ptr<class Map> CreateNodeMap();
+    std::shared_ptr<class Map> CreateNodeMapBackground(std::string path);
 };

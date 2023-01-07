@@ -20,6 +20,7 @@
 #include "Nodes/Map.h"
 #include "Nodes/PlayerNode.h"
 #include "Nodes/TimerNode.h"
+#include "Nodes/ParallaxNode.h"
 
 int32_t MainEngine::Init() {
     glfwSetErrorCallback(MainEngine::GLFWErrorCallback);
@@ -57,6 +58,7 @@ int32_t MainEngine::Init() {
 }
 
 int32_t MainEngine::InitializeWindow() {
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     window = glfwCreateWindow(640, 480, "Yet another 2D Engine", nullptr, nullptr);
     if (window == nullptr) {
         SPDLOG_ERROR("Failed to create OpenGL Window");
@@ -73,6 +75,8 @@ void MainEngine::GLFWErrorCallback(int Error, const char* Description) {
 }
 
 int32_t MainEngine::MainLoop() {
+    sceneRoot.Start(this);
+
     auto startProgramTimePoint = std::chrono::high_resolution_clock::now();
     float previousFrameSeconds = 0;
 
@@ -206,8 +210,24 @@ void MainEngine::PrepareScene() {
     map->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
     sceneRoot.AddChild(map);
 
+    auto backgroundOneParallax = std::make_shared<ParallaxNode>(0.2f);
+    backgroundOneParallax->GetLocalTransform()->SetPosition({0.f, 0.f, -10.f});
+    auto backgroundOne = CreateNodeMapBackground("res/other/background_one");
+    glm::vec2 backgroundSize = backgroundOne->GetSize();
+    backgroundOne->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
+    backgroundOneParallax->AddChild(backgroundOne);
+    sceneRoot.AddChild(backgroundOneParallax);
+
+    auto backgroundTwoParallax = std::make_shared<ParallaxNode>(0.4f);
+    backgroundTwoParallax->GetLocalTransform()->SetPosition({0.f, 0.f, -20.f});
+    auto backgroundTwo = CreateNodeMapBackground("res/other/background_two");
+    backgroundSize = backgroundTwo->GetSize();
+    backgroundTwo->GetLocalTransform()->SetPosition(glm::vec3(-mapSize.x / 2 + 0.5f, -mapSize.y / 2 + 0.5f, 0));
+    backgroundTwoParallax->AddChild(backgroundTwo);
+    sceneRoot.AddChild(backgroundTwoParallax);
+
     auto playerNode = std::make_shared<PlayerNode>(this, renderer.get());
-    playerNode->GetLocalTransform()->SetPosition({0.f, 0.f, 2.f});
+    playerNode->GetLocalTransform()->SetPosition({-20.f, 0.f, 2.f});
     sceneRoot.AddChild(playerNode);
 
     sceneRoot.CalculateWorldTransform();
@@ -278,6 +298,82 @@ std::shared_ptr<RigidbodyNode> MainEngine::CreateRigidbodyTile(const std::shared
     return rigidbodyNode;
 }
 
+std::shared_ptr<class Map> MainEngine::CreateNodeMapBackground(std::string path) {
+    auto cornerSprite = std::make_shared<Sprite>(glm::vec<2, int>(0, 0));
+    auto horizontalSprite = std::make_shared<Sprite>(glm::vec<2, int>(1, 0));
+    auto verticalSprite = std::make_shared<Sprite>(glm::vec<2, int>(2, 0));
+    auto stoneSprite = std::make_shared<Sprite>(glm::vec<2, int>(3, 1));
+    auto insideCornerSprite = std::make_shared<Sprite>(glm::vec<2, int>(3, 0));
+
+    auto stalactiteBase = std::make_shared<Sprite>(glm::ivec2(1, 1));
+    auto stalactiteTop = std::make_shared<Sprite>(glm::ivec2(0, 1));
+    auto stalactiteCenter = std::make_shared<Sprite>(glm::ivec2(2, 1));
+
+    auto stoneTileNode = std::make_shared<SpriteNode>(stoneSprite, renderer.get());
+    auto horizontalTileNode = std::make_shared<SpriteNode>(horizontalSprite, renderer.get());
+    auto revertedHorizontalTileNode = std::make_shared<SpriteNode>(horizontalSprite, renderer.get());
+    revertedHorizontalTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(1.f, 0.f, 0.f)));
+
+    auto verticalTileNode = std::make_shared<SpriteNode>(verticalSprite, renderer.get());
+    auto revertedVerticalTileNode = std::make_shared<SpriteNode>(verticalSprite, renderer.get());
+    revertedVerticalTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f)));
+
+    auto leftUpTileNode = std::make_shared<SpriteNode>(cornerSprite, renderer.get());
+    auto rightUpTileNode = std::make_shared<SpriteNode>(cornerSprite, renderer.get());
+    rightUpTileNode->GetLocalTransform()->SetRotation(glm::quat(glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f)));
+
+    auto rightDownTileNode = std::make_shared<SpriteNode>(cornerSprite, renderer.get());
+    rightDownTileNode->GetLocalTransform()->SetRotation(glm::quat({0.f, 0.f, glm::radians(180.f)}));
+    auto leftDownTileNode = std::make_shared<SpriteNode>(cornerSprite, renderer.get());
+    leftDownTileNode->GetLocalTransform()->SetRotation(glm::quat({glm::pi<float>(), 0.f, 0.f}));
+
+    auto innerDownRightNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    auto innerDownLeftNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    innerDownLeftNode->GetLocalTransform()->SetRotation(glm::quat({0.f, glm::radians(180.f), 0.f}));
+
+    auto innerUpRightNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    innerUpRightNode->GetLocalTransform()->SetRotation(glm::quat({glm::radians(180.f), glm::radians(180.f), 0.f}));
+
+    auto innerUpLeftNode = std::make_shared<SpriteNode>( insideCornerSprite, renderer.get());
+    innerUpLeftNode->GetLocalTransform()->SetRotation(glm::quat({glm::radians(180.f), 0.f, 0.f}));
+
+    auto stalactiteTopNode = std::make_shared<SpriteNode>(stalactiteTop, renderer.get());
+    auto flippedStalactiteTopNode = std::make_shared<SpriteNode>(stalactiteTop, renderer.get());
+    flippedStalactiteTopNode->GetLocalTransform()->SetRotation(glm::quat({glm::pi<float>(), 0.f, 0.f}));
+
+    auto stalactiteCenterNode = std::make_shared<SpriteNode>(stalactiteCenter, renderer.get());
+    auto flippedStalactiteCenterNode = std::make_shared<SpriteNode>(stalactiteCenter, renderer.get());
+    flippedStalactiteCenterNode->GetLocalTransform()->SetRotation(glm::quat({glm::pi<float>(), 0.f, 0.f}));
+
+    auto stalactiteBaseNode = std::make_shared<SpriteNode>(stalactiteBase, renderer.get());
+    auto flippedStalactiteBaseNode = std::make_shared<SpriteNode>(stalactiteBase, renderer.get());
+    flippedStalactiteBaseNode->GetLocalTransform()->SetRotation(glm::quat({glm::pi<float>(), 0.f, 0.f}));
+
+    std::map<char, Node*> nodesMap;
+    nodesMap['H'] = horizontalTileNode.get();
+    nodesMap['h'] = revertedHorizontalTileNode.get();
+    nodesMap['v'] = verticalTileNode.get();
+    nodesMap['V'] = revertedVerticalTileNode.get();
+    nodesMap['R'] = rightUpTileNode.get();
+    nodesMap['L'] = leftUpTileNode.get();
+    nodesMap['r'] = rightDownTileNode.get();
+    nodesMap['l'] = leftDownTileNode.get();
+    nodesMap['}'] = innerDownRightNode.get();
+    nodesMap['{'] = innerDownLeftNode.get();
+    nodesMap[']'] = innerUpLeftNode.get();
+    nodesMap['['] = innerUpRightNode.get();
+    nodesMap[' '] = nullptr;
+    nodesMap['#'] = stoneTileNode.get();
+    nodesMap['1'] = stalactiteTopNode.get();
+    nodesMap['2'] = stalactiteCenterNode.get();
+    nodesMap['3'] = stalactiteBaseNode.get();
+    nodesMap['7'] = flippedStalactiteTopNode.get();
+    nodesMap['8'] = flippedStalactiteCenterNode.get();
+    nodesMap['9'] = flippedStalactiteBaseNode.get();
+
+    return std::make_shared<Map>(path, nodesMap);
+}
+
 GLFWwindow* MainEngine::GetWindow() const {
     return window;
 }
@@ -285,3 +381,12 @@ GLFWwindow* MainEngine::GetWindow() const {
 Node& MainEngine::GetSceneRoot() {
     return sceneRoot;
 }
+
+CameraNode* MainEngine::GetCurrentCameraNode() {
+    return currentCameraNode;
+}
+
+void MainEngine::SetCurrentCameraNode(CameraNode* currentCameraNode) {
+    MainEngine::currentCameraNode = currentCameraNode;
+}
+

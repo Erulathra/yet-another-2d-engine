@@ -5,7 +5,7 @@
 #include "LoggingMacros.h"
 
 Camera::Camera()
-        : position(0.f, 0.f, 50.f), scale(32.f) {
+        : position(0.f, 0.f, 50.f), scale(40.f) {
     uboTransformMatrices = 0;
     glGenBuffers(1, &uboTransformMatrices);
     glBindBuffer(GL_UNIFORM_BUFFER, uboTransformMatrices);
