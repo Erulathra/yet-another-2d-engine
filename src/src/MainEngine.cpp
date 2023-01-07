@@ -132,9 +132,40 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
     ImGui::DragFloat("Camera Scale", &cameraScale, 0.5f, 1.f, 256.f);
     currentCameraNode->SetScale(cameraScale);
 
-    auto Player = dynamic_cast<PlayerNode*>(sceneRoot.GetChild([](Node* node) -> bool {
-        return dynamic_cast<PlayerNode*>(node) != nullptr;
-    }));
+    ImGui::Separator();
+
+    constinit static ParallaxNode* parallaxNodeOne = nullptr;
+    constinit static ParallaxNode* parallaxNodeTwo = nullptr;
+
+    if (parallaxNodeOne == nullptr || parallaxNodeTwo == nullptr)
+    {
+        std::vector<Node*> foundNodes;
+        sceneRoot.GetAllNodes(foundNodes, [](auto node) -> bool {
+            return dynamic_cast<ParallaxNode*>(node) != nullptr;
+        });
+
+        parallaxNodeOne = dynamic_cast<ParallaxNode*>(foundNodes[0]);
+        parallaxNodeTwo = dynamic_cast<ParallaxNode*>(foundNodes[1]);
+    }
+
+    constinit static float lagFactorOne = 0.2f;
+    constinit static float lagFactorTwo = 0.4f;
+
+    ImGui::DragFloat("Parallax One LagFactor", &lagFactorOne, 0.01f, 0.0f, 1.f);
+    ImGui::DragFloat("Parallax Two LagFactor", &lagFactorTwo, 0.01f, 0.0f, 1.f);
+
+    parallaxNodeOne->SetLagFactor(lagFactorOne);
+    parallaxNodeTwo->SetLagFactor(lagFactorTwo);
+
+    ImGui::Separator();
+
+    constinit static PlayerNode* player = nullptr;
+
+    if (player == nullptr) {
+        player = dynamic_cast<PlayerNode*>(sceneRoot.GetChild([](Node* node) -> bool {
+            return dynamic_cast<PlayerNode*>(node) != nullptr;
+        }));
+    }
 
     constinit static float jumpHeight = 2.f;
     constinit static float jumpDistance = 4.0f;
@@ -145,7 +176,7 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
     ImGui::DragFloat("Jump Height", &jumpHeight, 0.1f, 0.5f, 32.f);
     ImGui::DragFloat("Jump Distance", &jumpDistance, 0.1f, 0.5f, 32.f);
 
-    ImGui::Text("g: %.1f, v0: %.1f", Player->GetGravityAcceleration(), Player->GetStartJumpVelocity());
+    ImGui::Text("g: %.1f, v0: %.1f", player->GetGravityAcceleration(), player->GetStartJumpVelocity());
     ImGui::Separator();
 
     ImGui::DragFloat("Fall gravity factor", &fallGravityFactor, 0.05f, 0.1f, 1.f);
@@ -154,10 +185,10 @@ void MainEngine::UpdateWidget(float DeltaSeconds) {
 
     ImGui::DragFloat("PlayerSpeed", &playerSpeed, 0.05f, 0.1f, 64.f);
 
-    Player->SetPlayerSpeed(playerSpeed);
-    Player->SetFallGravityFactor(fallGravityFactor);
-    Player->SetButtonPressJumpGravityFactor(buttonPressGravityFactor);
-    Player->SetJumpParameters(jumpHeight, jumpDistance);
+    player->SetPlayerSpeed(playerSpeed);
+    player->SetFallGravityFactor(fallGravityFactor);
+    player->SetButtonPressJumpGravityFactor(buttonPressGravityFactor);
+    player->SetJumpParameters(jumpHeight, jumpDistance);
 
     ImGui::End();
 }
